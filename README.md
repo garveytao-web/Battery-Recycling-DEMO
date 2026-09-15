@@ -4,7 +4,9 @@
 
 ## 打开
 
-直接双击 `dist/index.html`，使用现代浏览器打开，无需安装依赖。亦可在仓库目录执行 `python -m http.server 8000 --directory dist` 后访问本地8000端口。数据保存在当前浏览器；不同浏览器、路径或设备的数据不共享。
+Windows下直接双击 `打开演示.bat`，无需安装环境或登录GPT。需要修改和调试时，安装Node.js后双击 `启动本地开发.bat`，浏览器将打开 `http://127.0.0.1:8080`。完整操作见 `本地开发说明.md`。
+
+也可以直接双击 `dist/index.html`，使用现代浏览器打开。数据保存在当前浏览器；不同浏览器、地址或设备的数据不共享。
 
 ## 演示顺序
 
@@ -30,6 +32,10 @@
 - `dist/style.css` 视觉样式
 - `dist/app.js` 样例、交互、模拟估价与本地保存
 - `.openai/hosting.json` 演示站点配置
+- `打开演示.bat` 无环境直接查看
+- `启动本地开发.bat` Windows本地开发入口
+- `dev-server.js` 零依赖本地网页服务
+- `本地开发说明.md` 面向非前端开发者的操作说明
 
 目标GitHub仓库：https://github.com/garveytao-web/Battery-Recycling-DEMO
 
