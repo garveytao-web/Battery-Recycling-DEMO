@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-label="循环利用">
+  <defs><linearGradient id="b4" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0c735d"/><stop offset="1" stop-color="#68a96f"/></linearGradient></defs><rect width="760" height="420" rx="34" fill="url(#b4)"/>
+  <g transform="translate(520 82)" fill="none" stroke="#e4f6e9" stroke-width="26" stroke-linecap="round"><path d="M39 91a99 99 0 0 1 155-32"/><path d="m183 31 18 38-42 3"/><path d="M199 151a99 99 0 0 1-155 34"/><path d="m55 213-18-38 42-3"/></g><path d="M621 146c31 36 23 86-14 113-36-42-24-89 14-113z" fill="#eff8c8"/>
+  <text x="54" y="102" fill="#c7ead8" font-size="22" font-family="Microsoft YaHei,sans-serif" letter-spacing="4">CIRCULAR VALUE</text><text x="54" y="173" fill="#fff" font-size="48" font-weight="700" font-family="Microsoft YaHei,sans-serif">让材料回到循环</text><text x="54" y="222" fill="#e6f6ed" font-size="25" font-family="Microsoft YaHei,sans-serif">聚焦合规处置与资源再生</text><text x="54" y="304" fill="#d9efe3" font-size="19" font-family="Microsoft YaHei,sans-serif">绿色 · 清洁 · 专业</text>
+</svg>

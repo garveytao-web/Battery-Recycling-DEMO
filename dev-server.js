@@ -35,15 +35,17 @@ const server = http.createServer((request, response) => {
   }
 
   fs.stat(filePath, (statError, stat) => {
-    if (statError || !stat.isFile()) {
+    const useSpaFallback = (statError || !stat?.isFile()) && !path.extname(requested);
+    const servedPath = useSpaFallback ? path.join(root, 'index.html') : filePath;
+    if ((statError || !stat?.isFile()) && !useSpaFallback) {
       response.writeHead(404, {'Content-Type': 'text/plain; charset=utf-8'}).end('文件不存在');
       return;
     }
     response.writeHead(200, {
-      'Content-Type': mime[path.extname(filePath).toLowerCase()] || 'application/octet-stream',
+      'Content-Type': mime[path.extname(servedPath).toLowerCase()] || 'application/octet-stream',
       'Cache-Control': 'no-store',
     });
-    fs.createReadStream(filePath).pipe(response);
+    fs.createReadStream(servedPath).pipe(response);
   });
 });
 

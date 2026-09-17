@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="循电临时标志">
+  <defs><linearGradient id="g" x1="8" y1="5" x2="56" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#159b70"/><stop offset="1" stop-color="#075f49"/></linearGradient></defs>
+  <rect x="3" y="3" width="58" height="58" rx="18" fill="url(#g)"/>
+  <path d="M18 26a17 17 0 0 1 28-7" fill="none" stroke="#d8f4e5" stroke-width="5" stroke-linecap="round"/>
+  <path d="m45 12 1 10-10-2" fill="#d8f4e5"/>
+  <path d="M46 38a17 17 0 0 1-28 7" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  <path d="m19 52-1-10 10 2" fill="#fff"/>
+  <path d="m35 19-10 16h8l-4 11 12-18h-8z" fill="#f0c86c"/>
+</svg>

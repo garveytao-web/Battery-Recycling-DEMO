@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 420" role="img" aria-label="智能估价">
+  <defs><linearGradient id="b1" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0a6c52"/><stop offset="1" stop-color="#18a477"/></linearGradient><pattern id="p1" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0v32" fill="none" stroke="#fff" stroke-opacity=".06"/></pattern></defs>
+  <rect width="760" height="420" rx="34" fill="url(#b1)"/><rect width="760" height="420" fill="url(#p1)"/>
+  <circle cx="617" cy="191" r="118" fill="#fff" opacity=".08"/><circle cx="617" cy="191" r="82" fill="none" stroke="#bfead7" stroke-width="2" stroke-dasharray="8 9"/>
+  <rect x="558" y="109" width="116" height="168" rx="22" fill="#e9fff4" opacity=".96"/><rect x="595" y="91" width="42" height="22" rx="7" fill="#b7e8d0"/><path d="m628 135-44 67h35l-17 49 54-80h-36z" fill="#0b7558"/>
+  <text x="54" y="102" fill="#bfead7" font-size="22" font-family="Microsoft YaHei,sans-serif" letter-spacing="4">SMART VALUATION</text>
+  <text x="54" y="173" fill="#fff" font-size="48" font-weight="700" font-family="Microsoft YaHei,sans-serif">智能估价</text><text x="54" y="222" fill="#e5f7ef" font-size="25" font-family="Microsoft YaHei,sans-serif">从车型与电池型号开始</text>
+  <rect x="54" y="276" width="184" height="50" rx="25" fill="#fff" opacity=".96"/><text x="84" y="309" fill="#0b7558" font-size="22" font-weight="700" font-family="Microsoft YaHei,sans-serif">查看演示报告 →</text>
+</svg>

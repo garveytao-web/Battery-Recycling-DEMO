@@ -1,39 +1,302 @@
 'use strict';
-const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const packs=[{id:'a1',car:'城市通勤 · 演示车型 A',version:'标准续航版 · 候选 1',material:'磷酸铁锂',kg:345,kwh:44.9,ah:135,v:332.8,cellAh:139,cellKg:2.6,cellV:3.2,maker:'演示电池企业 A'},{id:'a2',car:'城市通勤 · 演示车型 A',version:'长续航版 · 候选 2',material:'磷酸铁锂',kg:390,kwh:55,ah:150,v:366.7,cellAh:150,cellKg:3,cellV:3.2,maker:'演示电池企业 B'},{id:'b1',car:'家庭出行 · 演示车型 B',version:'长续航版',material:'三元',kg:430,kwh:72,ah:180,v:400,cellAh:90,cellKg:1.8,cellV:3.6,maker:'演示电池企业 C'},{id:'c1',car:'城市物流 · 演示车型 C',version:'标准版',material:'磷酸铁锂',kg:510,kwh:68,ah:200,v:340,cellAh:200,cellKg:4,cellV:3.2,maker:'演示电池企业 D'}];
-const seedTrades=()=>[{id:'t1',title:'磷酸铁锂动力电池包 · 整包回收',kind:'出售',method:'普通报价',category:'电池包',qty:12,unit:'包',price:3200,priceUnit:'元/包',region:'湖北',desc:'来源于演示库存，参数仅供展示。支持查看整包信息，具体成色以实物为准。',status:'展示中',owner:'华中回收 · 演示企业',icon:'▥'}, {id:'t2',title:'三元电池模组 · 回收采购需求',kind:'求购',method:'普通报价',category:'电池模组',qty:5,unit:'吨',price:28000,priceUnit:'元/吨',region:'广东',desc:'三元材料电池模组采购需求，数量及报价均为演示数据。',status:'展示中',owner:'循环资源 · 演示企业',icon:'▤'}, {id:'t3',title:'退役动力电池拆解料 · 第03批',kind:'出售',method:'竞拍展示',category:'拆解料',qty:1,unit:'批',price:18500,priceUnit:'元/批',region:'湖北',desc:'总价竞拍展示样例。包含物料基本信息与预置记录，不接受真实或模拟竞价提交。',status:'进行中',owner:'绿色再生 · 演示企业',icon:'◈'}, {id:'t4',title:'磷酸铁锂电芯 · 库存处置',kind:'出售',method:'竞拍展示',category:'电芯',qty:1,unit:'批',price:23600,priceUnit:'元/批',region:'湖南',desc:'已结束标的展示样例，成交金额为预置演示数据。',status:'已结束',owner:'绿色再生 · 演示企业',icon:'▥'}, {id:'t5',title:'新能源物流车电池包求购',kind:'求购',method:'普通报价',category:'电池包',qty:20,unit:'包',price:4000,priceUnit:'元/包',region:'河南',desc:'用于演示供求信息的浏览与普通报价。',status:'展示中',owner:'中原循环 · 演示企业',icon:'▥'}, {id:'t6',title:'动力电池铜铝拆解料',kind:'出售',method:'普通报价',category:'拆解料',qty:2,unit:'吨',price:17000,priceUnit:'元/吨',region:'江西',desc:'铜铝拆解物料，包装及交付条件待线下确认。',status:'展示中',owner:'资源再生 · 演示企业',icon:'◈'}];
-let storeOK=true;let db;try{db=JSON.parse(localStorage.getItem('battery-demo-v1')||'null')}catch{storeOK=false}if(!db||db.schema!==1||!Array.isArray(db.reports)||!Array.isArray(db.trades)||!Array.isArray(db.quotes))db={schema:1,reports:[],trades:seedTrades(),quotes:[],draft:null};
-function save(){try{localStorage.setItem('battery-demo-v1',JSON.stringify(db))}catch{storeOK=false;toast('当前浏览器无法保存，关闭页面后记录可能丢失')}}
-const uid=prefix=>prefix+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);const money=n=>Number(n).toLocaleString('zh-CN',{maximumFractionDigits:0});const date=t=>new Date(t).toLocaleString('zh-CN',{hour12:false});
-let quick={car:'',pack:'',region:'',km:''}, cond={purpose:'材料回收',maker:'',material:'磷酸铁锂',shape:'方壳',ah:'',v:'3.2',kg:'',count:'',soh:'',kwh:''};let filter={kind:'全部',search:'',method:'全部'},historyType='全部';let current={page:'home'},trail=[];
-function go(page,data={},back=false){if(!back)trail.push({...current,scroll:window.scrollY});current={page,...data};render();window.scrollTo(0,0)}function back(){const prev=trail.pop();current=prev||{page:'home'};render();window.scrollTo(0,current.scroll||0)}
-function toast(s){$('#toast').textContent=s;$('#toast').style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>$('#toast').style.display='none',3200)}
-function dialog(title,body){$('#modal').innerHTML=`<div class="row"><h2>${title}</h2><button data-a="close" aria-label="关闭">✕</button></div>${body}`;$('#modal').showModal()}
-function kv(rows){return `<dl class="kv">${rows.map(([a,b])=>`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</dl>`}
-function badge(s){return `<span class="badge">${esc(s)}</span>`}function options(list,val){return list.map(s=>`<option ${s===val?'selected':''} value="${esc(s)}">${esc(s)}</option>`).join('')}
-function unitInput(name,label,val,unit,min=0,step='any',required=false,max=''){return `<label for="${name}">${label}${required?' <span class="danger">*</span>':''}</label><div class="field-unit"><input id="${name}" name="${name}" type="number" value="${esc(val)}" min="${min}" step="${step}" ${max!==''?`max="${max}"`:''} ${required?'required':''} inputmode="decimal" placeholder="请输入"><span>${unit}</span></div>`}
-function quickFields(home=false){return `<label for="car">车辆 / 电池型号 <span class="danger">*</span></label><select id="car" name="car" required><option value="">选择演示车型或电池型号</option>${options([...new Set(packs.map(x=>x.car))],quick.car)}</select>${quick.car?`<label for="pack">电池包版本 <span class="danger">*</span></label><select name="pack" id="pack" required><option value="">请选择候选版本</option>${packs.filter(p=>p.car===quick.car).map(p=>`<option value="${p.id}" ${quick.pack===p.id?'selected':''}>${p.version} · ${p.kwh}kWh</option>`).join('')}</select><p class="form-hint">同一车型可能对应多个电池包，请按版本选择。</p>`:''}${home?'':`<label for="region">常用地区 <span class="muted">选填</span></label><select name="region" id="region"><option value="">不计地区修正</option>${options(['湖北','湖南','河南','江西','广东','其他'],quick.region)}</select>${unitInput('km','行驶里程 <span class="muted">选填</span>',quick.km,'km',0,'any',false,1000000)}<p class="form-hint">未填里程时仅展示材料回收估价。</p>`}`}
-function home(){return `<section class="intro"><div class="eyebrow">BATTERY VALUE</div><h1>这块电池，<br>还能创造多少价值？</h1><p>从电池参数开始，了解回收价值。</p><div class="battery-art" aria-hidden="true">↯</div></section><form class="card quick-card" id="quick-home"><div class="row"><h2 style="margin:0">快速估价</h2><button type="button" class="text-btn" data-a="sample-quick">填入示例 ↗</button></div>${quickFields(true)}<button class="primary" style="margin-top:20px">开始估价 <span style="float:right">→</span></button><p class="form-hint">样例车型与参数仅用于功能演示</p></form><div class="tile-grid"><button class="tile" data-a="go" data-page="condition"><span class="glyph">▤</span><strong>条件估价 ↗</strong><small>已知电芯参数，直接测算</small></button><button class="tile" data-a="go" data-page="market"><span class="glyph">⇄</span><strong>回收交易 ↗</strong><small>发现出售与求购信息</small></button></div><section class="section" style="padding-top:0"><div class="row"><h2 class="section-title">最近的报告</h2><button class="text-btn" data-a="go" data-page="history">全部 →</button></div>${db.reports.length?reportCard(db.reports[0]):`<div class="card empty"><div class="glyph">▧</div><p>第一份电池报告，从这里开始</p><span class="small">完成估价后，可随时回看报告</span></div>`}<p class="notice">演示估价基于样例参数与模拟规则，不构成实际回收报价。</p></section>`}
-function quickPage(){return `<section class="section"><div class="flow-steps"><b>01 填写信息</b><span>—</span><span>02 查看报告</span></div><div class="row"><h2 class="section-title">快速估价</h2><button class="text-btn" data-a="sample-quick">填入示例</button></div><form id="quick" class="card">${quickFields()}<div class="row" style="margin-top:17px"><button type="button" class="text-btn" data-a="help">型号在哪里？</button><button type="button" class="text-btn" data-a="scan">▣ 模拟扫码</button></div><div id="error" class="error"></div><button class="primary">立即估价 →</button><button type="button" class="secondary" style="width:100%;margin-top:10px" data-a="evaluate">只查看参数评估报告</button></form><p class="notice">这不是电池检测。未提供VIN / SN时，型号匹配仍可能存在批次差异。</p></section>`}
-function conditionPage(){const mat=cond.purpose!=='梯次参考',lad=cond.purpose!=='材料回收';return `<section class="section"><div class="row"><h2 class="section-title">按电芯条件估价</h2><button class="text-btn" data-a="sample-cond">填入示例</button></div><div class="tabbar">${['材料回收','梯次参考','两者'].map(t=>`<button class="${cond.purpose===t?'active':''}" data-a="purpose" data-value="${t}">${t}</button>`).join('')}</div><form id="condition" class="card"><label for="maker">生产企业 <span class="muted">选填</span></label><input id="maker" name="maker" value="${esc(cond.maker)}" placeholder="未知可留空"><div class="two-col"><div><label for="material">电池材料</label><select name="material" id="material">${options(['磷酸铁锂','三元'],cond.material)}</select></div><div><label for="shape">单体外形</label><select name="shape" id="shape">${options(['方壳','软包','圆柱'],cond.shape)}</select></div></div><div class="two-col"><div>${unitInput('ah','单体容量',cond.ah,'Ah',0.001,'any',true)}</div><div>${unitInput('v','标称电压',cond.v,'V',0.001,'any',true)}</div></div>${mat?`<div class="soft-rule"></div><h3>材料回收参数</h3><div class="two-col"><div>${unitInput('kg','单体质量',cond.kg,'kg',0.001,'any',true)}</div><div>${unitInput('count','单体数量',cond.count,'个',1,1,true)}</div></div>`:''}${lad?`<div class="soft-rule"></div><h3>梯次参考参数</h3>${unitInput('soh','剩余容量比例',cond.soh,'%',0.01,'any',true,100)}${unitInput('kwh','整包标称电量',cond.kwh,'kWh',0.001,'any',true)}<p class="form-hint">剩余容量比例为自行提供，非平台检测值。</p>`:''}<div class="error" id="error"></div><button class="primary" style="margin-top:20px">生成估价报告 →</button></form><p class="notice">单体容量Ah与整包电量kWh是不同参数；材料回收和梯次参考代表不同用途，不能相加。</p></section>`}
-function range(n){return `${money(n*.9)}–${money(n*1.1)}`}
-function resultPage(r){if(!r)return missing();const i=r.input;return `<section class="report-top"><div class="eyebrow">VALUE REPORT</div><h1>电池估价报告</h1><div class="small">${date(r.time)}</div><span class="watermark">↯</span></section><div class="report-body"><div class="card prices ${r.material!=null&&r.ladder!=null?'':'single'}">${[['ladder','梯次参考'],['material','材料估价']].filter(([k])=>r[k]!=null).map(([k,l])=>`<div><div class="price"><small>¥ </small>${money(r[k])}</div><div class="price-label">${l}</div><div class="range">区间 ¥${range(r[k])}</div><div class="small muted">元/${r.unit}</div></div>`).join('')}</div><div class="card"><div class="row"><h2>估价条件</h2>${badge('模拟数据')}</div>${kv(r.source==='quick'?[['车型',i.pack.car],['电池包',i.pack.version],['生产企业',i.pack.maker],['电池材料',i.pack.material],['整包质量',i.pack.kg+' kg'],['整包电量',i.pack.kwh+' kWh'],['常用地区',i.region||'未计地区修正'],['行驶里程',i.km===''?'未提供':i.km+' km'],...(r.q!=null?[['模拟剩余容量',(r.q*100).toFixed(1)+'%']]:[])]:[['生产企业',i.maker||'未知'],['电池材料',i.material],['单体外形',i.shape],['单体容量',i.ah+' Ah'],['标称电压',i.v+' V'],...(r.material!=null?[['单体质量',i.kg+' kg'],['单体数量',i.count+' 个']]:[]),...(r.ladder!=null?[['剩余容量',i.soh+'%'],['整包电量',i.kwh+' kWh']]:[])])}</div>${r.linked?`<button class="record row" data-a="report" data-id="${r.linked}"><span>查看电芯 / 电池包参数报告</span><span class="arrow">→</span></button>`:''}<div class="card"><h3>这份估价如何理解？</h3><p class="small muted">材料回收按质量与模拟单价测算；梯次参考按电量与剩余容量比例测算。两者对应不同用途，不能相加。区间为演示设定。</p><div class="small muted">报告编号 ${r.id}<br>规则版本 MOCK-1</div></div><p class="notice">仅为演示估价，不构成实际回收报价或再利用资格判断。数据保存在当前浏览器。</p><div class="actions"><button class="secondary" data-a="reestimate" data-id="${r.id}">重新估价</button><button class="primary" data-a="publish-from" data-id="${r.id}">发布出售</button></div></div>`}
-function paramPage(r){if(!r)return missing();let p=r.input.pack;return `<section class="report-top"><div class="eyebrow">BATTERY PROFILE</div><h1>电池评估报告</h1><div class="small">报告编号 ${r.id}<br>${date(r.time)}</div><span class="watermark">▧</span></section><div class="report-body"><div class="card"><strong>${esc(p.car)}</strong><div class="small muted">${esc(p.version)} · 样例参数</div></div><div class="card"><h2>电芯信息</h2>${kv([['生产企业',p.maker],['电芯材料',p.material],['电芯质量',p.cellKg+' kg'],['标称容量',p.cellAh+' Ah'],['标称电压',p.cellV+' V']])}</div><div class="card"><h2>电池包信息</h2>${kv([['生产企业',p.maker],['材料类型',p.material],['整包质量',p.kg+' kg'],['标称容量',p.ah+' Ah'],['标称电压',p.v+' V'],['标称电量',p.kwh+' kWh']])}</div><div class="card"><h2>车辆信息</h2>${kv([['车辆名称',p.car],['车辆型号','演示型号 '+p.id.toUpperCase()],['动力类型','纯电动'],['参数来源','MOCK · 演示样例']])}</div><p class="notice">以上为样例参数，不代表实际单车检测结果。实际匹配仍需结合VIN、SN及批次信息。</p><button class="secondary" style="width:100%" data-a="print">打印 / 保存 PDF 报告</button></div>`}
-function reportCard(r){return `<button class="record" data-a="report" data-id="${r.id}"><div class="row"><strong>${r.type==='param'?'电池评估报告':'电池估价报告'}</strong><span class="arrow">↗</span></div><p>${esc(r.input.pack?.car||r.input.maker||'条件估价')} · ${date(r.time)}</p><div class="row"><span class="small muted">${r.id}</span>${r.type==='price'?`<span style="color:var(--green)">¥${money(r.material??r.ladder)}</span>`:badge('参数报告')}</div></button>`}
-function historyPage(){let rs=db.reports.filter(r=>historyType==='全部'||r.type===(historyType==='估价报告'?'price':'param'));return `<section class="section"><h2 class="section-title">历史报告</h2><div class="chips history-filter">${['全部','估价报告','参数报告'].map(t=>`<button class="chip ${historyType===t?'active':''}" data-a="history-filter" data-value="${t}">${t}</button>`).join('')}</div>${rs.map(reportCard).join('')||'<div class="card empty">暂时没有报告，先完成一次评估吧。</div>'}<p class="notice">历史报告保留生成时的数据，打开不会重新计算。</p></section>`}
-function tradeCard(t){return `<button class="transaction" data-a="trade" data-id="${t.id}"><div class="material-icon" aria-hidden="true">${t.icon||'▥'}</div><div class="info"><h3>${esc(t.title)}</h3><span class="tag">${esc(t.kind)}</span>${t.method==='竞拍展示'?'<span class="tag warm">竞拍展示</span>':''}<div class="row"><span class="money">¥ ${money(t.price)} <small style="font-size:11px">${esc(t.priceUnit)}</small></span></div><div class="meta">${esc(t.region)} · ${esc(t.qty)}${esc(t.unit)} · ${esc(t.status)}</div></div></button>`}
-function marketPage(){let ts=db.trades.filter(t=>(filter.kind==='全部'||t.kind===filter.kind)&&(filter.method==='全部'||t.method===filter.method)&&t.title.toLowerCase().includes(filter.search.toLowerCase()));return `<section class="section"><div class="row"><div><div class="eyebrow">CIRCULAR MARKET</div><h2 class="section-title">回收交易</h2></div><button class="secondary" data-a="go" data-page="publish">＋ 发布</button></div><form id="market-search" class="toolbar"><input name="search" aria-label="搜索交易信息" placeholder="搜索电池、模组、拆解料" value="${esc(filter.search)}"><button class="text-btn">搜索</button></form><div class="tabbar">${['全部','出售','求购'].map(t=>`<button class="${filter.kind===t?'active':''}" data-a="market-kind" data-value="${t}">${t}</button>`).join('')}</div><div class="chips" style="margin-bottom:18px">${['全部','普通报价','竞拍展示'].map(t=>`<button class="chip ${filter.method===t?'active':''}" data-a="market-method" data-value="${t}">${t==='全部'?'全部方式':t}</button>`).join('')}</div>${ts.map(tradeCard).join('')||'<div class="card empty">没有匹配的信息<br><button class="text-btn" data-a="market-reset">重置筛选</button></div>'}<p class="notice">所有交易信息均为演示样例，竞拍仅展示。</p></section>`}
-function detailPage(t){if(!t)return missing();let auction=t.method==='竞拍展示';return `<section class="section"><div class="detail-art" aria-hidden="true">${t.icon||'▥'}</div><div class="card"><div class="row">${badge(t.kind)}<span class="small muted">${esc(t.status)}</span></div><h2 style="margin-top:13px">${esc(t.title)}</h2><div class="price">¥${money(t.price)} <small>${esc(t.priceUnit)}</small></div><p class="small muted">${auction?'预置展示价格':'演示参考报价'}</p><div class="soft-rule"></div>${kv([['交易方式',t.method],['物料类别',t.category],['数量',t.qty+' '+t.unit],['交易地区',t.region],['发布企业',t.owner],...(auction?[['起拍价','¥ 15,000 / 批'],['最小加价','¥ 500 / 批'],['交易状态',t.status+'（预置）']]:[])])}</div><div class="card"><h2>详细信息</h2><p class="small muted">${esc(t.desc)}</p>${t.reportId?`<button class="text-btn" data-a="report" data-id="${t.reportId}">查看关联估价报告 →</button>`:''}</div><div class="card"><h2>${auction?'预置竞拍记录':'报价记录'}</h2>${auction?`<p class="small muted">以下记录仅用于展示。</p>${kv([['演示买家 A','¥ '+money(t.price)+' / 批'],['演示买家 B','¥ '+money(t.price-500)+' / 批']])}`:db.quotes.filter(q=>q.tradeId===t.id).map(q=>`<div class="row small"><span>演示用户 · ${date(q.time)}</span><strong>¥${money(q.price)}</strong></div>`).join('')||'<p class="small muted">暂无报价</p>'}</div>${auction?'<div class="sample-note">竞拍仅作信息展示，不开放出价、付款和交割。</div>':`<button class="primary" data-a="quote" data-id="${t.id}">提交普通报价（演示）</button>`}</section>`}
-function publishPage(){let d=db.draft||{};return `<section class="section"><h2 class="section-title">发布供求信息</h2><form id="publish" class="card">${d.reportId?'<div class="sample-note">已带入估价摘要，发布价格请自行填写。</div>':''}<label for="kind">信息类型</label><select name="kind" id="kind">${options(['出售','求购'],d.kind||'出售')}</select><label for="title">标题 <span class="danger">*</span></label><input name="title" id="title" value="${esc(d.title||'')}" maxlength="50" required placeholder="例如：磷酸铁锂动力电池包出售"><label for="category">物料类别</label><select name="category" id="category">${options(['电池包','电池模组','电芯','拆解料'],d.category||'电池包')}</select><div class="two-col"><div>${unitInput('qty','数量',d.qty||1,'',0.001,'any',true)}</div><div><label for="unit">数量单位</label><select name="unit" id="unit">${options(['包','个','kg','吨','批'],d.unit||'包')}</select></div></div><label for="price">报价（元 / 所选数量单位） <span class="danger">*</span></label><input name="price" id="price" type="number" min="0.01" step="0.01" value="${esc(d.price||'')}" required placeholder="请输入单价"><label for="region">地区 <span class="danger">*</span></label><select name="region" id="region" required><option value="">请选择地区</option>${options(['湖北','湖南','河南','江西','广东','其他'],d.region||'')}</select><label for="desc">物料说明 <span class="danger">*</span></label><textarea name="desc" id="desc" required maxlength="1000" placeholder="补充电池参数、数量与成色">${esc(d.desc||'')}</textarea><div class="actions"><button type="button" class="secondary" data-a="draft">保存草稿</button><button class="primary">发布演示信息</button></div></form><p class="notice">此处发布普通供求信息，仅保存在本机，不会提交到任何真实交易平台。</p></section>`}
-function mePage(){return `<section class="section"><div class="profile"><div class="row"><div class="row"><div class="avatar">循</div><div><strong>演示体验者</strong><div class="small muted">欢迎回来，探索电池的新价值</div></div></div></div><div class="stats"><div><strong>${db.reports.length}</strong><small>我的报告</small></div><div><strong>${db.trades.filter(t=>t.mine).length}</strong><small>我的发布</small></div><div><strong>${db.quotes.length}</strong><small>普通报价</small></div></div></div><div class="card"><button class="menu-item" data-a="go" data-page="history"><span>▧　历史报告</span><span>→</span></button><button class="menu-item" data-a="go" data-page="my-posts"><span>↗　我的发布</span><span>→</span></button><button class="menu-item" data-a="go" data-page="my-quotes"><span>⇄　我的普通报价</span><span>→</span></button><button class="menu-item" data-a="go" data-page="publish"><span>▤　发布草稿 ${db.draft?'· 已保存':''}</span><span>→</span></button></div><div class="card"><button class="menu-item" data-a="about"><span>关于本次演示</span><span>→</span></button><button class="menu-item danger" data-a="reset"><span>重置演示数据</span><span>↺</span></button></div><p class="notice">报告、发布与报价仅保存在当前浏览器，不同设备不共享。${storeOK?'':'当前存储不可用，记录仅在本次会话有效。'}</p></section>`}
-function missing(){return '<section class="section"><div class="empty">记录不存在或已重置。<br><button data-a="go" data-page="home" class="text-btn">返回首页</button></div></section>'}
-function render(){const p=current.page;const titles={home:'循电',quick:'快速估价',condition:'条件估价',report:'我的报告',market:'回收交易',trade:'交易详情',publish:'发布信息',me:'我的',history:'历史报告','my-posts':'我的发布','my-quotes':'我的报价'};$('#header').innerHTML=p==='home'?'<div class="brand"><span class="logo">↯</span>循电</div><span class="badge">DEMO 01</span>':`<button data-a="back" aria-label="返回">‹</button><span class="header-title">${titles[p]||'循电'}</span><span class="badge">演示</span>`;let r=db.reports.find(r=>r.id===current.id);$('#app').innerHTML=({home,quick:quickPage,condition:conditionPage,history:historyPage,market:marketPage,me:mePage,publish:publishPage,report:()=>r?(r.type==='param'?paramPage(r):resultPage(r)):missing(),trade:()=>detailPage(db.trades.find(t=>t.id===current.id)),'my-posts':()=>`<section class="section"><h2>我的发布</h2>${db.trades.filter(t=>t.mine).map(tradeCard).join('')||'<p class="empty">尚未发布供求信息</p>'}</section>`,'my-quotes':()=>`<section class="section"><h2>我的普通报价</h2>${db.quotes.map(q=>`<button class="record" data-a="trade" data-id="${q.tradeId}"><strong>${esc(db.trades.find(t=>t.id===q.tradeId)?.title)}</strong><p>${date(q.time)}</p>¥ ${money(q.price)} ${esc(q.unit)}</button>`).join('')||'<p class="empty">暂无报价记录</p>'}</section>`}[p]||home)();$('#nav').innerHTML=[['home','⌂','首页'],['market','⇄','交易'],['me','○','我的']].map(([page,icon,label])=>`<button data-a="nav" data-page="${page}" class="${p===page?'active':''}"><span>${icon}</span>${label}</button>`).join('');}
-function captureQuick(){let f=$('#quick')||$('#quick-home');if(f){let v=Object.fromEntries(new FormData(f));Object.assign(quick,v)}}function captureCond(){if($('#condition'))Object.assign(cond,Object.fromEntries(new FormData($('#condition'))))}
-function finitePositive(...values){return values.every(v=>v!==''&&Number.isFinite(Number(v))&&Number(v)>0)}
-function createQuick(paramOnly=false){captureQuick();let p=packs.find(p=>p.id===quick.pack&&p.car===quick.car);if(!p){toast('请选择车型及电池包版本');return}if(!paramOnly&&quick.km!==''&&(!Number.isFinite(+quick.km)||+quick.km<0||+quick.km>1000000)){toast('请输入0至100万之间的里程');return}const input={...quick,pack:{...p}},time=Date.now();let param={id:uid('BP'),type:'param',source:'quick',time,input:structuredClone(input)};db.reports.unshift(param);if(paramOnly){save();go('report',{id:param.id});return}let region={'湖北':1,'湖南':.98,'河南':.97,'江西':.99,'广东':1.02}[quick.region]||1;let q=quick.km===''?null:Math.max(.5,.95-.01*(+quick.km/10000));let report={id:uid('BV'),type:'price',source:'quick',time,input:structuredClone(input),linked:param.id,material:p.kg*(p.material==='三元'?24:12)*region,ladder:q==null?null:p.kwh*q*180*region,q,unit:'包'};db.reports.unshift(report);save();go('report',{id:report.id})}
-function createCondition(){captureCond();let mat=cond.purpose!=='梯次参考',lad=cond.purpose!=='材料回收';if(!finitePositive(cond.ah,cond.v)||(mat&&(!finitePositive(cond.kg,cond.count)||!Number.isInteger(+cond.count)))||(lad&&(!finitePositive(cond.soh,cond.kwh)||+cond.soh>100))){toast('请检查必填参数，数量为正整数、比例不超过100%');return}let report={id:uid('BV'),type:'price',source:'condition',time:Date.now(),input:{...cond},material:mat?+cond.kg*+cond.count*(cond.material==='三元'?30:16):null,ladder:lad?+cond.kwh*(+cond.soh/100)*180:null,unit:'批'};if([report.material,report.ladder].some(v=>v!==null&&!Number.isFinite(v))){toast('数值过大，请检查参数');return}db.reports.unshift(report);save();go('report',{id:report.id})}
-document.addEventListener('change',e=>{if(e.target.name==='car'){captureQuick();let list=packs.filter(p=>p.car===quick.car);quick.pack=list.length===1?list[0].id:'';render()}if(e.target.name==='material'&&$('#condition')){captureCond();cond.v=cond.material==='三元'?'3.6':'3.2';render()}});
-document.addEventListener('submit',e=>{e.preventDefault();if(e.target.id==='quick-home'){captureQuick();go('quick')}if(e.target.id==='quick')createQuick();if(e.target.id==='condition')createCondition();if(e.target.id==='market-search'){filter.search=new FormData(e.target).get('search').trim();render()}if(e.target.id==='publish'){let d=Object.fromEntries(new FormData(e.target));if(!d.title.trim()||!d.desc.trim()||!finitePositive(d.qty,d.price)){toast('请填写标题、说明和有效数量、价格');return}db.trades.unshift({...d,id:uid('T'),qty:+d.qty,price:+d.price,priceUnit:'元/'+d.unit,method:'普通报价',status:'展示中',owner:'演示体验者',mine:true,reportId:db.draft?.reportId,icon:'▥'});db.draft=null;save();toast('演示信息已保存到本机');go('trade',{id:db.trades[0].id})}if(e.target.id==='quote-form'){const t=db.trades.find(t=>t.id===e.target.dataset.id),price=new FormData(e.target).get('price');if(!t||t.method!=='普通报价'||!finitePositive(price)){toast('请输入有效报价');return}db.quotes.unshift({id:uid('Q'),tradeId:t.id,price:+price,unit:t.priceUnit,time:Date.now()});save();$('#modal').close();toast('普通报价已保存（演示）');render()}});
-document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id,v=b.dataset.value;if(a==='back'){captureQuick();captureCond();back()}if(a==='go'){captureQuick();captureCond();go(b.dataset.page)}if(a==='nav'){captureQuick();captureCond();trail=[];go(b.dataset.page)}if(a==='close')$('#modal').close();if(a==='sample-quick'){quick={car:packs[0].car,pack:'a1',region:'湖北',km:'80000'};render();toast('已填入演示样例')}if(a==='sample-cond'){cond={purpose:'两者',maker:'演示电池企业 A',material:'磷酸铁锂',shape:'方壳',ah:'100',v:'3.2',kg:'2.5',count:'100',soh:'80',kwh:'36'};render();toast('已填入双估价样例')}if(a==='purpose'){captureCond();cond.purpose=v;render()}if(a==='evaluate')createQuick(true);if(a==='help')dialog('型号在哪里？','<p>车辆公告型号通常可在车辆铭牌或机动车行驶证中找到，与VIN（车架号）不同。</p><p>首版使用演示车型。同一车型可能存在不同电池包，需选择对应版本。</p><button class="primary" data-a="close">明白了</button>');if(a==='scan')dialog('模拟扫码','<p>本次不会启用摄像头。点击后填入演示车型A的标准续航版本。</p><button class="primary" data-a="scan-done">使用扫码样例</button>');if(a==='scan-done'){$('#modal').close();quick={car:packs[0].car,pack:'a1',region:'湖北',km:''};render();toast('样例型号已填入')}if(a==='report')go('report',{id});if(a==='trade')go('trade',{id});if(a==='history-filter'){historyType=v;render()}if(a==='market-kind'){filter.kind=v;render()}if(a==='market-method'){filter.method=v;render()}if(a==='market-reset'){filter={kind:'全部',method:'全部',search:''};render()}if(a==='reestimate'){let r=db.reports.find(r=>r.id===id);if(r.source==='quick'){quick={car:r.input.pack.car,pack:r.input.pack.id,region:r.input.region,km:r.input.km};go('quick')}else{cond={...r.input};go('condition')}}if(a==='publish-from'){let r=db.reports.find(r=>r.id===id);db.draft={kind:'出售',title:(r.input.pack?.car||r.input.material)+' · 回收出售',category:'电池包',qty:1,unit:r.unit,region:r.input.region||'',desc:`关联估价报告 ${r.id}。${r.material!=null?'材料参考区间 ¥'+range(r.material)+'；':''}${r.ladder!=null?'梯次参考区间 ¥'+range(r.ladder)+'；':''}演示数据，仅供展示。`,reportId:r.id};save();go('publish')}if(a==='draft'){db.draft={...db.draft,...Object.fromEntries(new FormData($('#publish')))};save();toast('草稿已保存')}if(a==='quote'){let t=db.trades.find(t=>t.id===id);if(t?.method==='普通报价')dialog('普通报价（演示）',`<p>${esc(t.title)}</p><form id="quote-form" data-id="${id}"><label for="quote-price">报价 · ${esc(t.priceUnit)}</label><input id="quote-price" name="price" type="number" min="0.01" step="0.01" required><button class="primary" style="margin-top:18px">保存演示报价</button></form>`)}if(a==='print')window.print();if(a==='about')dialog('循电 · 首版演示','<p>从估价到报告，再到回收供求展示。</p><p>所有型号、参数、价格和交易信息均为模拟。竞拍仅供浏览，数据保存在当前浏览器。</p><button class="primary" data-a="close">继续体验</button>');if(a==='reset')dialog('重置演示数据？','<p>将清除本机生成的报告、发布、草稿和普通报价，并恢复初始交易样例。</p><div class="actions"><button class="secondary" data-a="close">取消</button><button class="primary" data-a="reset-confirm">确认重置</button></div>');if(a==='reset-confirm'){db={schema:1,reports:[],trades:seedTrades(),quotes:[],draft:null};save();$('#modal').close();trail=[];go('home');toast('已恢复初始演示数据')}});
+
+const $ = selector => document.querySelector(selector);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
+const round = (value, digits = 2) => Number(Number(value).toFixed(digits));
+const money = value => Number(value).toLocaleString('zh-CN', {maximumFractionDigits:0});
+const date = value => new Date(value).toLocaleString('zh-CN', {hour12:false});
+const uid = prefix => `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+
+// 全部为产品演示用 Mock 数据。锂统一采用“折金属锂当量”口径和对应的元/kg参考单价。
+const materialCatalog = {
+  lfp: [
+    {name:'锂', scope:'折金属锂当量', ratio:.011, price:76, recovery:.78},
+    {name:'镍', ratio:0, price:82, recovery:.82},
+    {name:'钴', ratio:0, price:168, recovery:.84},
+    {name:'锰', ratio:.002, price:8.2, recovery:.70},
+    {name:'铜', ratio:.082, price:56, recovery:.91},
+    {name:'铝', ratio:.14, price:13.2, recovery:.88},
+    {name:'铁', ratio:.18, price:1.8, recovery:.90}
+  ],
+  ncm: [
+    {name:'锂', scope:'折金属锂当量', ratio:.013, price:76, recovery:.80},
+    {name:'镍', ratio:.075, price:82, recovery:.84},
+    {name:'钴', ratio:.022, price:168, recovery:.86},
+    {name:'锰', ratio:.034, price:8.2, recovery:.76},
+    {name:'铜', ratio:.09, price:56, recovery:.92},
+    {name:'铝', ratio:.12, price:13.2, recovery:.89},
+    {name:'铁', ratio:.08, price:1.8, recovery:.90}
+  ]
+};
+
+const packs = [
+  {id:'ABCD1', brand:'比亚迪', model:'海豚', year:'2024', chemistry:'磷酸铁锂', chemistryKey:'lfp', kg:340, kwh:44.9, maker:'Demo 电池企业 A', voltage:332.8, capacity:135, confidence:.94},
+  {id:'EFGH2', brand:'蔚来', model:'ET5', year:'2023', chemistry:'三元锂', chemistryKey:'ncm', kg:480, kwh:75, maker:'Demo 电池企业 B', voltage:400, capacity:187.5, confidence:.91},
+  {id:'IJKL3', brand:'广汽埃安', model:'AION Y', year:'2022', chemistry:'磷酸铁锂', chemistryKey:'lfp', kg:405, kwh:63.9, maker:'Demo 电池企业 C', voltage:355.2, capacity:180, confidence:.88}
+];
+
+const seedTrades = () => [
+  {id:'T-1001', title:'磷酸铁锂动力电池包 · 整包回收', kind:'出售', method:'普通报价', category:'电池包', qty:12, unit:'包', price:5200, priceUnit:'元/包', region:'湖北', desc:'来源于演示库存，参数和价格仅用于平台流程展示，具体状态需线下检测。', status:'报价中', owner:'华中循环 · 演示企业', icon:'▥'},
+  {id:'T-1002', title:'三元锂电池模组 · 回收采购需求', kind:'求购', method:'普通报价', category:'电池模组', qty:5, unit:'吨', price:31800, priceUnit:'元/吨', region:'广东', desc:'三元锂电池模组采购需求，数量及报价均为 Demo 模拟数据。', status:'报价中', owner:'湾区再生 · 演示企业', icon:'▤'},
+  {id:'T-1003', title:'退役动力电池拆解料 · 第 03 批', kind:'出售', method:'竞拍演示', category:'拆解料', qty:1, unit:'批', price:18500, priceUnit:'元/批', region:'湖北', desc:'竞拍流程展示样例。仅展示预置记录和状态，不接受真实竞价、付款或交割。', status:'进行中', owner:'绿色再生 · 演示企业', icon:'◈'},
+  {id:'T-1004', title:'磷酸铁锂电芯 · 库存处置', kind:'出售', method:'竞拍演示', category:'电芯', qty:1, unit:'批', price:23600, priceUnit:'元/批', region:'湖南', desc:'已结束标的展示样例，成交金额为预置演示数据。', status:'已结束', owner:'湘江循环 · 演示企业', icon:'▥'},
+  {id:'T-1005', title:'新能源物流车电池包求购', kind:'求购', method:'普通报价', category:'电池包', qty:20, unit:'包', price:4600, priceUnit:'元/包', region:'河南', desc:'用于演示供求信息浏览与普通报价保存。', status:'报价中', owner:'中原循环 · 演示企业', icon:'▥'}
+];
+
+function calculateMaterials(pack) {
+  return materialCatalog[pack.chemistryKey].map(item => {
+    const weight = round(pack.kg * item.ratio, 2);
+    return {...item, weight, value:round(weight * item.price * item.recovery, 2)};
+  });
+}
+
+function createReport(pack, input, time = Date.now(), id = uid('XR')) {
+  const materials = calculateMaterials(pack);
+  const total = round(materials.reduce((sum, item) => sum + item.value, 0), 2);
+  const km = input.km === '' || input.km == null ? null : Number(input.km);
+  const mileageFactor = km == null ? 1 : km <= 50000 ? 1 : km <= 100000 ? .97 : km <= 150000 ? .94 : .90;
+  const regionFactor = ({'湖北':1,'湖南':.99,'河南':.98,'江西':.99,'广东':1.02})[input.region] || 1;
+  const spread = pack.confidence >= .93 ? .08 : pack.confidence >= .90 ? .10 : .12;
+  const center = total * mileageFactor * regionFactor;
+  return {
+    id, type:'material-report', time, dataDate:'2026-09-15', pack:clone(pack),
+    input:{region:input.region || '', km:input.km ?? ''}, materials, total,
+    range:{low:round(center * (1 - spread)), high:round(center * (1 + spread)), mileageFactor, regionFactor, spread},
+    confidence:pack.confidence
+  };
+}
+
+function seedReports() {
+  return [
+    createReport(packs[0], {region:'湖北',km:'68000'}, new Date('2026-09-15T10:18:00+08:00').getTime(), 'XR-DEMO-24091501'),
+    createReport(packs[1], {region:'广东',km:'92000'}, new Date('2026-09-13T15:42:00+08:00').getTime(), 'XR-DEMO-23091302'),
+    createReport(packs[2], {region:'湖南',km:'128000'}, new Date('2026-09-11T09:30:00+08:00').getTime(), 'XR-DEMO-22091103')
+  ];
+}
+
+let storeOK = true;
+let db;
+try { db = JSON.parse(localStorage.getItem('battery-demo-v2') || 'null'); } catch { storeOK = false; }
+if (!db || db.schema !== 2 || !Array.isArray(db.reports) || !Array.isArray(db.trades) || !Array.isArray(db.quotes)) {
+  db = {schema:2, reports:seedReports(), trades:seedTrades(), quotes:[], draft:null};
+}
+function save() { try { localStorage.setItem('battery-demo-v2', JSON.stringify(db)); } catch { storeOK = false; toast('当前浏览器无法保存，关闭页面后记录可能丢失'); } }
+
+let estimate = {brand:'',model:'',year:'',packId:'',region:'',km:''};
+let filter = {kind:'全部',method:'全部',search:''};
+let current = {page:'home'};
+let trail = [];
+let carouselIndex = 0;
+let carouselStartX = null;
+let carouselTimer = null;
+
+function options(list, selected) { return list.map(value => `<option value="${esc(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${esc(value)}</option>`).join(''); }
+function badge(value) { return `<span class="badge">${esc(value)}</span>`; }
+function kv(rows) { return `<dl class="kv">${rows.map(([key,value]) => `<dt>${esc(key)}</dt><dd>${esc(value)}</dd>`).join('')}</dl>`; }
+function getSelectedPack() { return packs.find(pack => pack.id === estimate.packId); }
+function unique(values) { return [...new Set(values)]; }
+
+function go(page, data = {}, isBack = false) {
+  if (!isBack) trail.push({...current, scroll:$('#app')?.scrollTop || 0});
+  current = {page, ...data};
+  render();
+  if ($('#app')) $('#app').scrollTop = 0;
+}
+function back() {
+  const previous = trail.pop() || {page:'home'};
+  current = previous;
+  render();
+  if ($('#app')) $('#app').scrollTop = previous.scroll || 0;
+}
+function toast(message) {
+  const node = $('#toast');
+  if (!node) return;
+  node.textContent = message;
+  node.style.display = 'block';
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => { node.style.display = 'none'; }, 2800);
+}
+function closeOverlay() { const root = $('#overlay-root'); if (root) root.innerHTML = ''; }
+function openModal(title, body, sheet = false) {
+  $('#overlay-root').innerHTML = `<div class="overlay ${sheet ? 'sheet' : ''}" data-a="overlay-close"><section class="modal" role="dialog" aria-modal="true" aria-label="${esc(title)}" data-modal><div class="row"><h2>${esc(title)}</h2><button class="modal-close" data-a="close-overlay" aria-label="关闭">×</button></div>${body}</section></div>`;
+}
+function openLoading() {
+  $('#overlay-root').innerHTML = '<div class="overlay"><section class="modal" role="status" style="text-align:center"><div style="font-size:38px;color:var(--green)">◌</div><h2>正在生成材料估价</h2><p class="muted">匹配 Demo 电池参数并计算材料构成…</p></section></div>';
+}
+
+function estimateFields() {
+  const brands = unique(packs.map(pack => pack.brand));
+  const models = unique(packs.filter(pack => !estimate.brand || pack.brand === estimate.brand).map(pack => pack.model));
+  const years = unique(packs.filter(pack => (!estimate.brand || pack.brand === estimate.brand) && (!estimate.model || pack.model === estimate.model)).map(pack => pack.year));
+  const candidates = packs.filter(pack => (!estimate.brand || pack.brand === estimate.brand) && (!estimate.model || pack.model === estimate.model) && (!estimate.year || pack.year === estimate.year));
+  return `<label for="brand">汽车品牌 <span class="danger">*</span></label><select id="brand" name="brand" data-estimate-field required><option value="">请选择品牌</option>${options(brands,estimate.brand)}</select>
+    <label for="model">车型 <span class="danger">*</span></label><select id="model" name="model" data-estimate-field required><option value="">请选择车型</option>${options(models,estimate.model)}</select>
+    <div class="two-col"><div><label for="year">生产年份 <span class="danger">*</span></label><select id="year" name="year" data-estimate-field required><option value="">请选择</option>${options(years,estimate.year)}</select></div><div><label for="packId">电池型号 <span class="danger">*</span></label><select id="packId" name="packId" data-estimate-field required><option value="">请选择</option>${options(candidates.map(pack=>pack.id),estimate.packId)}</select></div></div>
+    ${estimate.packId ? '<p class="sample-note">所选型号为 Demo 模拟型号，不对应实际车辆公告数据。</p>' : ''}
+    <div class="two-col"><div><label for="region">所在省份 <span class="muted">选填</span></label><select id="region" name="region"><option value="">不修正</option>${options(['湖北','湖南','河南','江西','广东','其他'],estimate.region)}</select></div><div><label for="km">行驶里程 <span class="muted">选填</span></label><div class="field-unit"><input id="km" name="km" type="number" min="0" max="1000000" step="1" value="${esc(estimate.km)}" inputmode="numeric" placeholder="例如 68000"><span>km</span></div></div></div>`;
+}
+
+function homePage() {
+  const banners = [1,2,3,4,5].map((number,index) => `<div class="slide"><img src="assets/banner-${number}.svg" alt="${['智能估价','材料价值拆解','规范回收','循环利用','回收交易'][index]}"></div>`).join('');
+  return `<div class="demo-bar">Demo 模拟数据 · 不构成实际交易或回收报价</div><section class="hero"><div class="carousel" id="carousel"><div class="slides" style="transform:translateX(-${carouselIndex*100}%)">${banners}</div><div class="dots">${[0,1,2,3,4].map(index=>`<button class="dot ${index===carouselIndex?'active':''}" data-a="carousel" data-index="${index}" aria-label="第 ${index+1} 张"></button>`).join('')}</div></div></section>
+    <div class="card quick-card"><div class="row"><div><div class="eyebrow">MATERIAL VALUATION</div><h2 style="margin:3px 0">金属材料构成估价</h2></div><button class="text-btn" data-a="sample">填入示例</button></div><p class="small muted">选择车辆与 Demo 电池型号，查看材料重量、参考单价、回收系数和估算价值。</p><button class="primary" data-a="start">开始评估　→</button></div>
+    <div class="tile-grid"><button class="tile" data-a="go" data-page="history"><span class="glyph">▧</span><strong>历史报告 ↗</strong><small>统一查看材料估价报告</small></button><button class="tile" data-a="go" data-page="market"><span class="glyph">⇄</span><strong>回收交易 ↗</strong><small>浏览供求与竞拍演示</small></button></div>
+    <section class="section" style="padding-top:0"><div class="row"><h2 class="section-title">最近报告</h2><button class="text-btn" data-a="go" data-page="history">全部 →</button></div>${reportCard(db.reports[0])}</section>`;
+}
+
+function estimatePage() {
+  return `<section class="section"><div class="flow-steps"><b>01 车辆信息</b><span>—</span><span>02 材料计算</span><span>—</span><span>03 报告</span></div><div class="row"><h2 class="section-title">电池回收估价</h2><button class="text-btn" data-a="sample">填入主案例</button></div><form id="estimate-form" class="card">${estimateFields()}<button class="primary" style="margin-top:18px">开始评估</button></form><div class="disclaimer"><strong>重要说明</strong><br>所有车型匹配、材料比例、重量、单价、系数和金额均为 Demo 模拟数据，仅用于产品功能演示，不构成实际交易或回收报价。</div></section>`;
+}
+
+function materialRows(report) {
+  const maxRatio = Math.max(...report.materials.map(item => item.ratio));
+  return report.materials.map(item => `<div class="material-row"><div><span class="material-name">${esc(item.name)}</span><div class="bar-track"><i style="width:${item.ratio ? Math.max(5,item.ratio/maxRatio*100) : 0}%"></i></div></div><span>${(item.ratio*100).toFixed(1)}%</span><span>${item.weight.toFixed(2)} kg</span><span>¥${item.price}/kg</span><span>${(item.recovery*100).toFixed(0)}%</span><strong>¥${money(item.value)}</strong></div>`).join('');
+}
+function confidenceText(value) { return value >= .93 ? '高（车型与型号完整匹配）' : value >= .90 ? '较高（Demo 参数匹配）' : '中等（存在批次差异）'; }
+function reportPage(report) {
+  if (!report) return missingPage();
+  const pack = report.pack;
+  return `<section class="report-hero"><div class="eyebrow">MATERIAL VALUE REPORT</div><h1>材料回收估价报告</h1><div class="small">报告编号 ${esc(report.id)}<br>${date(report.time)}</div></section><div class="report-body">
+    <div class="card valuation"><div class="small muted">材料回收总估值</div><div class="big-price"><small>¥</small>${money(report.total)}</div><div class="range">合理区间 ¥${money(report.range.low)} — ¥${money(report.range.high)}</div><span class="confidence">可信度 ${(report.confidence*100).toFixed(0)}%</span></div>
+    <div class="card"><div class="row"><h2>识别结果</h2>${badge('Demo 模拟数据')}</div>${kv([['车辆信息',`${pack.brand} ${pack.model} · ${pack.year}`],['电池型号',`${pack.id}（Demo 模拟型号）`],['电池化学体系',pack.chemistry],['电池包质量',`${pack.kg} kg`],['电池包容量',`${pack.kwh} kWh`],['标称电压',`${pack.voltage} V`],['所在省份',report.input.region||'未提供'],['行驶里程',report.input.km===''?'未提供':`${Number(report.input.km).toLocaleString()} km`]])}</div>
+    <div class="card"><div class="row"><h2>金属材料构成</h2><span class="small muted">共 ${report.materials.length} 项</span></div><div class="material-table"><div class="material-head"><span>材料</span><span>占比</span><span>重量</span><span>参考单价</span><span>系数</span><span>估算价值</span></div>${materialRows(report)}</div><p class="notice">未列部分包括电解液、石墨、隔膜、塑料、结构件及其他材料，占比不要求合计为 100%。磷酸铁锂体系的镍、钴占比按 0% 展示。</p></div>
+    <div class="card"><h2>估价依据</h2><div class="formula">材料估算重量 = 电池包质量 × 材料占比<br>材料估算价值 = 材料估算重量 × 参考回收单价 × 回收系数<br>材料回收总估值 = 各项材料估算价值之和</div>${kv([['材料价值合计',`¥${money(report.total)}`],['车型匹配可信度',confidenceText(report.confidence)],['里程修正',`${(report.range.mileageFactor*100).toFixed(0)}%`],['地区修正',`${(report.range.regionFactor*100).toFixed(0)}%`],['区间浮动',`±${(report.range.spread*100).toFixed(0)}%`],['数据日期',report.dataDate],['规则版本','MOCK-MATERIAL-2']])}<p class="notice">区间以材料价值合计为基础，结合车型匹配可信度、里程和地区模拟修正形成。锂按“折金属锂当量”统一口径，不与碳酸锂或电池级碳酸锂价格混用。</p></div>
+    <div class="disclaimer"><strong>Demo 免责声明</strong><br>仅用于产品功能演示，不构成实际交易或回收报价；未接入实时行情、权威数据库或真实检测系统。</div>
+    <div class="actions"><button class="secondary" data-a="share" data-id="${report.id}">分享报告</button><button class="primary" data-a="publish-from" data-id="${report.id}">发起回收</button></div></div>`;
+}
+
+function reportCard(report) {
+  if (!report) return '<div class="card empty">暂无报告</div>';
+  return `<button class="record" data-a="report" data-id="${esc(report.id)}"><div class="row"><strong>${esc(report.pack.brand)} ${esc(report.pack.model)} · ${esc(report.pack.id)}</strong><span class="arrow">↗</span></div><p>${date(report.time)} · ${esc(report.pack.chemistry)}</p><div class="row"><span class="small muted">${esc(report.id)}</span><span style="color:var(--green);font-weight:700">¥${money(report.total)}</span></div></button>`;
+}
+function historyPage() { return `<section class="section"><h2 class="section-title">历史报告</h2><p class="small muted">评估完成与历史记录复用同一报告详情组件。</p>${db.reports.map(reportCard).join('') || '<div class="card empty">暂无报告</div>'}<p class="notice">历史报告保留生成时的 Mock 数据，打开时不会重新计算。</p></section>`; }
+
+function tradeCard(trade) {
+  return `<button class="transaction" data-a="trade" data-id="${trade.id}"><span class="material-icon">${trade.icon}</span><span class="info"><span class="tag">${esc(trade.kind)}</span><span class="tag warm">${esc(trade.method)}</span><h3>${esc(trade.title)}</h3><span class="money">¥${money(trade.price)} <small>${esc(trade.priceUnit)}</small></span><div class="small muted">${esc(trade.region)} · ${esc(trade.status)}</div></span></button>`;
+}
+function marketPage() {
+  let trades = db.trades.filter(trade => (filter.kind==='全部'||trade.kind===filter.kind) && (filter.method==='全部'||trade.method===filter.method) && (!filter.search||trade.title.includes(filter.search)));
+  return `<section class="section"><div class="row"><h2 class="section-title">回收交易</h2><button class="text-btn" data-a="publish">＋ 发布</button></div><form id="market-search" class="row" style="margin-bottom:12px"><input name="search" value="${esc(filter.search)}" placeholder="搜索电池包、模组或拆解料"><button class="secondary">搜索</button></form><div class="chips">${['全部','出售','求购'].map(value=>`<button class="chip ${filter.kind===value?'active':''}" data-a="market-kind" data-value="${value}">${value}</button>`).join('')}</div><div class="chips">${['全部','普通报价','竞拍演示'].map(value=>`<button class="chip ${filter.method===value?'active':''}" data-a="market-method" data-value="${value}">${value}</button>`).join('')}</div>${trades.map(tradeCard).join('')||'<div class="card empty">没有匹配的交易</div>'}<p class="notice">交易数据均为演示，不含实时竞价、支付、托管、物流和实际履约。</p></section>`;
+}
+function tradePage(trade) {
+  if (!trade) return missingPage();
+  const auction = trade.method === '竞拍演示';
+  const quotes = db.quotes.filter(quote => quote.tradeId === trade.id);
+  return `<section class="section"><div class="detail-art">${trade.icon}</div><div class="card"><div class="row">${badge(trade.kind)}<span class="small muted">${esc(trade.status)}</span></div><h2 style="margin:12px 0 4px">${esc(trade.title)}</h2><div class="money">¥${money(trade.price)} <small>${esc(trade.priceUnit)}</small></div><p class="small muted">Demo 参考价格</p><div class="soft-rule"></div>${kv([['交易方式',trade.method],['物料类别',trade.category],['数量',`${trade.qty} ${trade.unit}`],['交易地区',trade.region],['发布企业',trade.owner]])}</div><div class="card"><h2>物料说明</h2><p class="small muted">${esc(trade.desc)}</p></div>
+    ${auction ? `<div class="card"><h2>历史竞拍</h2><div class="auction-steps"><span>已发布</span><span class="active">${esc(trade.status)}</span><span>结果公示</span></div>${kv([['演示竞买方 A',`¥${money(trade.price)} / 批`],['演示竞买方 B',`¥${money(trade.price-500)} / 批`]])}</div><button class="primary" data-a="auction-entry" data-id="${trade.id}">发起竞拍（演示入口）</button>` : `<div class="card"><h2>历史报价</h2>${quotes.length ? quotes.map(quote=>`<div class="row small" style="margin:7px 0"><span>演示用户 · ${date(quote.time)}</span><strong>¥${money(quote.price)}</strong></div>`).join('') : '<p class="small muted">暂无保存的报价</p>'}</div><button class="primary" data-a="quote" data-id="${trade.id}">提交普通报价（演示）</button>`}
+    <p class="notice">本页不产生真实订单、资金或履约义务。</p></section>`;
+}
+
+function publishPage() {
+  const draft = db.draft || {};
+  return `<section class="section"><h2 class="section-title">发布回收信息</h2><form id="publish-form" class="card"><label for="pub-title">标题</label><input id="pub-title" name="title" required maxlength="50" value="${esc(draft.title||'')}" placeholder="例如：磷酸铁锂动力电池包出售"><div class="two-col"><div><label for="pub-kind">类型</label><select id="pub-kind" name="kind">${options(['出售','求购'],draft.kind||'出售')}</select></div><div><label for="pub-category">物料</label><select id="pub-category" name="category">${options(['电池包','电池模组','电芯','拆解料'],draft.category||'电池包')}</select></div></div><div class="two-col"><div><label for="pub-qty">数量</label><input id="pub-qty" name="qty" type="number" min="1" value="${esc(draft.qty||1)}" required></div><div><label for="pub-unit">单位</label><select id="pub-unit" name="unit">${options(['包','个','kg','吨','批'],draft.unit||'包')}</select></div></div><label for="pub-price">演示报价（元/单位）</label><input id="pub-price" name="price" type="number" min="0.01" step="0.01" value="${esc(draft.price||'')}" required><label for="pub-region">地区</label><select id="pub-region" name="region" required><option value="">请选择</option>${options(['湖北','湖南','河南','江西','广东','其他'],draft.region||'')}</select><label for="pub-desc">说明</label><textarea id="pub-desc" name="desc" required>${esc(draft.desc||'')}</textarea><div class="actions"><button type="button" class="secondary" data-a="save-draft">保存草稿</button><button class="primary">发布演示信息</button></div></form><div class="disclaimer">信息仅保存在本机浏览器，不会提交到真实交易平台。</div></section>`;
+}
+function mePage() {
+  return `<section class="section"><div class="profile"><div class="row start"><div class="avatar">循</div><div style="flex:1"><strong>演示体验账号</strong><div class="small muted">客户演示环境 · 未连接真实用户体系</div></div></div></div><div class="card"><button class="menu-item" data-a="go" data-page="history"><span>历史报告</span><span>共 ${db.reports.length} 份　›</span></button><button class="menu-item" data-a="my-quotes"><span>历史报价</span><span>共 ${db.quotes.length} 条　›</span></button><button class="menu-item" data-a="about"><span>关于循电 Demo</span><span>›</span></button><button class="menu-item danger" data-a="reset"><span>重置演示数据</span><span>›</span></button></div></section>`;
+}
+function quoteHistoryPage() {
+  return `<section class="section"><h2 class="section-title">历史报价</h2>${db.quotes.map(quote=>{const trade=db.trades.find(item=>item.id===quote.tradeId);return `<button class="record" data-a="trade" data-id="${quote.tradeId}"><strong>${esc(trade?.title||'交易记录')}</strong><p>${date(quote.time)}</p><span class="money">¥${money(quote.price)}</span></button>`;}).join('')||'<div class="card empty">暂无普通报价记录</div>'}</section>`;
+}
+function missingPage() { return '<section class="section"><div class="card empty">记录不存在或已被清除。</div></section>'; }
+
+function render() {
+  const page = current.page;
+  const titles = {estimate:'开始评估',report:'评估报告详情',history:'历史报告',market:'回收交易',trade:'交易详情',publish:'发布信息',me:'我的',quotes:'历史报价'};
+  $('#header').innerHTML = page === 'home' ? '<div class="brand-lockup"><img src="assets/logo-mark.svg" alt=""><span>循电<small>BATTERY CIRCULAR</small></span></div><span class="badge">DEMO 02</span>' : `<button class="back" data-a="back" aria-label="返回">‹</button><span class="header-title">${titles[page]||'循电'}</span><span class="badge">演示</span>`;
+  const report = db.reports.find(item => item.id === current.id);
+  const trade = db.trades.find(item => item.id === current.id);
+  const pages = {home:homePage, estimate:estimatePage, report:()=>reportPage(report), history:historyPage, market:marketPage, trade:()=>tradePage(trade), publish:publishPage, me:mePage, quotes:quoteHistoryPage};
+  $('#app').innerHTML = (pages[page] || homePage)();
+  $('#nav').innerHTML = [['home','⌂','首页'],['market','⇄','交易'],['me','○','我的']].map(([target,icon,label])=>`<button data-a="nav" data-page="${target}" class="${page===target?'active':''}"><span>${icon}</span>${label}</button>`).join('');
+  closeOverlay();
+  updateCarouselTimer();
+}
+
+function captureEstimate(form) {
+  if (!form) return;
+  const data = new FormData(form);
+  estimate = {brand:data.get('brand')||'',model:data.get('model')||'',year:data.get('year')||'',packId:data.get('packId')||'',region:data.get('region')||'',km:data.get('km')||''};
+}
+function useSample(openForm = false) {
+  estimate = {brand:'比亚迪',model:'海豚',year:'2024',packId:'ABCD1',region:'湖北',km:'68000'};
+  if (openForm) go('estimate'); else render();
+  toast('已填入比亚迪海豚主案例');
+}
+function completeEstimate() {
+  const pack = getSelectedPack();
+  if (!pack) { closeOverlay(); toast('请选择完整的车辆与电池型号'); return; }
+  if (estimate.km !== '' && (!Number.isFinite(+estimate.km) || +estimate.km < 0 || +estimate.km > 1000000)) { closeOverlay(); toast('行驶里程需在 0 至 100 万 km 之间'); return; }
+  const report = createReport(pack, estimate);
+  db.reports.unshift(report);
+  save();
+  closeOverlay();
+  go('report',{id:report.id});
+}
+function updateCarouselTimer() {
+  if (carouselTimer) clearInterval(carouselTimer);
+  if (current.page === 'home' && typeof setInterval === 'function') carouselTimer = setInterval(()=>{ carouselIndex=(carouselIndex+1)%5; const slides=$('.slides'); if(slides) slides.style.transform=`translateX(-${carouselIndex*100}%)`; document.querySelectorAll?.('.dot').forEach?.((dot,index)=>dot.classList.toggle('active',index===carouselIndex)); },4200);
+}
+
+document.addEventListener('submit', event => {
+  event.preventDefault();
+  if (event.target.id === 'estimate-form') { captureEstimate(event.target); openLoading(); setTimeout(completeEstimate, 420); }
+  if (event.target.id === 'market-search') { filter.search = String(new FormData(event.target).get('search')||'').trim(); render(); }
+  if (event.target.id === 'quote-form') {
+    const trade = db.trades.find(item=>item.id===event.target.dataset.id);
+    const price = Number(new FormData(event.target).get('price'));
+    if (!trade || trade.method !== '普通报价' || !Number.isFinite(price) || price <= 0) { toast('请输入有效报价'); return; }
+    db.quotes.unshift({id:uid('Q'),tradeId:trade.id,price,time:Date.now()}); save(); closeOverlay(); toast('演示报价已保存'); render();
+  }
+  if (event.target.id === 'publish-form') {
+    const data = Object.fromEntries(new FormData(event.target));
+    if (!data.title.trim() || !data.desc.trim() || !(+data.qty>0) || !(+data.price>0)) { toast('请完整填写有效信息'); return; }
+    const trade={...data,id:uid('T'),qty:+data.qty,price:+data.price,priceUnit:`元/${data.unit}`,method:'普通报价',status:'报价中',owner:'演示体验账号',icon:'▥',mine:true};
+    db.trades.unshift(trade); db.draft=null; save(); toast('演示信息已保存到本机'); go('trade',{id:trade.id});
+  }
+});
+
+document.addEventListener('change', event => {
+  if (!event.target.matches?.('[data-estimate-field]')) return;
+  captureEstimate(event.target.form);
+  if (event.target.name === 'brand') { estimate.model=''; estimate.year=''; estimate.packId=''; }
+  if (event.target.name === 'model') { estimate.year=''; estimate.packId=''; }
+  if (event.target.name === 'year') estimate.packId='';
+  render();
+});
+
+document.addEventListener('click', event => {
+  const button = event.target.closest?.('[data-a]');
+  if (!button) return;
+  const action=button.dataset.a, id=button.dataset.id, value=button.dataset.value;
+  if (action==='back') back();
+  if (action==='go') go(button.dataset.page);
+  if (action==='nav') { trail=[]; go(button.dataset.page); }
+  if (action==='start') go('estimate');
+  if (action==='sample') useSample(current.page==='home');
+  if (action==='report') go('report',{id});
+  if (action==='trade') go('trade',{id});
+  if (action==='market-kind') { filter.kind=value; render(); }
+  if (action==='market-method') { filter.method=value; render(); }
+  if (action==='publish') go('publish');
+  if (action==='my-quotes') go('quotes');
+  if (action==='carousel') { carouselIndex=Number(button.dataset.index); render(); }
+  if (action==='close-overlay') closeOverlay();
+  if (action==='overlay-close' && event.target===button) closeOverlay();
+  if (action==='share') openModal('分享报告（演示）',`<p>报告 ${esc(id)} 已生成演示分享卡片。本 Demo 不会上传数据或创建公开链接。</p><button class="primary" data-a="copy-share">复制演示分享文案</button>`);
+  if (action==='copy-share') { closeOverlay(); toast('演示分享文案已复制（交互示意）'); }
+  if (action==='quote') { const trade=db.trades.find(item=>item.id===id); if(trade) openModal('普通报价（演示）',`<p>${esc(trade.title)}</p><form id="quote-form" data-id="${trade.id}"><label for="quote-price">报价 · ${esc(trade.priceUnit)}</label><input id="quote-price" name="price" type="number" min="0.01" step="0.01" required placeholder="输入演示报价"><button class="primary" style="margin-top:15px">保存演示报价</button></form>`,true); }
+  if (action==='auction-entry') openModal('竞拍演示状态','<p>该入口仅展示平台流程：标的发布 → 资质确认 → 竞价 → 结果公示。</p><div class="auction-steps"><span>标的发布</span><span class="active">演示中</span><span>结果公示</span></div><div class="disclaimer">不支持多人实时竞价、有效出价提交、支付、托管或交割。</div>');
+  if (action==='publish-from') { const report=db.reports.find(item=>item.id===id); if(report){db.draft={kind:'出售',title:`${report.pack.brand}${report.pack.model} ${report.pack.id} 电池包回收`,category:'电池包',qty:1,unit:'包',region:report.input.region,price:Math.round(report.total),desc:`关联演示报告 ${report.id}，材料回收参考总估值 ¥${money(report.total)}。数据仅用于演示。`};save();go('publish');} }
+  if (action==='save-draft') { db.draft={...db.draft,...Object.fromEntries(new FormData($('#publish-form')))}; save(); toast('草稿已保存'); }
+  if (action==='about') openModal('循电 · 第二版演示','<p>面向动力电池回收场景的材料构成估价与轻量交易流程 Demo。</p><div class="disclaimer">全部车辆、电池、材料、价格和交易数据均为模拟；未接入实时行情或权威数据库。</div>');
+  if (action==='reset') openModal('重置演示数据？','<p>将清除本机生成的报告、报价、发布与草稿，并恢复预置演示记录。</p><div class="actions"><button class="secondary" data-a="close-overlay">取消</button><button class="primary" data-a="reset-confirm">确认重置</button></div>');
+  if (action==='reset-confirm') { db={schema:2,reports:seedReports(),trades:seedTrades(),quotes:[],draft:null}; save(); trail=[]; current={page:'home'}; render(); toast('已恢复初始演示数据'); }
+});
+
+document.addEventListener('touchstart', event => { if(event.target.closest?.('#carousel')) carouselStartX=event.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', event => { if(carouselStartX==null||!event.target.closest?.('#carousel')) return; const delta=event.changedTouches[0].clientX-carouselStartX; if(Math.abs(delta)>35){carouselIndex=(carouselIndex+(delta<0?1:4))%5;render();} carouselStartX=null; }, {passive:true});
+
+if (document.modelContext?.registerTool) document.modelContext.registerTool({name:'open_battery_demo_report',description:'打开一份循电 Demo 材料回收估价报告',inputSchema:{type:'object',properties:{reportId:{type:'string'}},required:['reportId']},execute:({reportId})=>{const report=db.reports.find(item=>item.id===reportId);if(!report)throw new Error('报告不存在');go('report',{id:reportId});return {reportId,total:report.total};}});
+
 render();
-if(document.modelContext?.registerTool){try{Promise.resolve(document.modelContext.registerTool({name:'open_battery_demo_report',description:'Open an existing local battery report by its ID without recalculating it.',inputSchema:{type:'object',properties:{reportId:{type:'string'}},required:['reportId'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const r=db.reports.find(r=>r.id===input?.reportId);if(!r)throw new Error('Report not found');go('report',{id:r.id});return {reportId:r.id,type:r.type,time:r.time}}})).catch(()=>{})}catch{}}
