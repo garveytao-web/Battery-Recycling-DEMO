@@ -1,3 +1,9 @@
 .sites-runtime/
 node_modules/
 .env
+server/storage/
+miniprogram/config.local.js
+project.private.config.json
+*.sqlite*
+coverage/
+releases/

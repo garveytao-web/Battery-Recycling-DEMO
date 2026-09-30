@@ -1,0 +1,74 @@
+<view class="page">
+<view wx:if="{{loading}}" class="empty">读取报告…</view>
+<view wx:if="{{error}}" class="error">{{error}}<button class="ghost space" bindtap="load">重试</button>
+</view>
+ <block wx:if="{{report}}">
+<view class="card">
+<text class="tag">{{report.statusLabel}}</text>
+<view class="title space">{{report.title}}</view>
+<view wx:if="{{report.result}}">
+<view class="price">¥ {{report.result.low}}<text wx:if="{{report.result.low !== report.result.high}}"> — {{report.result.high}}</text>
+</view>
+<view class="muted">元/批 · {{report.result.intervalMeaning}}</view>
+</view>
+<view wx:else class="notice">暂无自动价格。报告已保存，可补充数据后重新测算。</view>
+<view class="divider"/>
+<view class="small">{{report.scope}}</view>
+</view>
+ <view class="notice" wx:for="{{report.warnings}}" wx:key="*this">{{item}}</view>
+ <view class="card">
+<view class="title">本次输入</view>
+<view class="row item">
+<text>材料 / 货物</text>
+<text>{{chemistry}} / {{goods}}</text>
+</view>
+<view class="row item">
+<text>封装</text>
+<text>{{form}}</text>
+</view>
+<view class="row item">
+<text>计价数量</text>
+<text>{{report.input.quantity}} {{report.basisUnit}}</text>
+</view>
+<view class="row item">
+<text>电芯品牌</text>
+<text>{{report.input.brand || '未限定'}}</text>
+</view>
+<view class="row item">
+<text>单体容量</text>
+<text>{{report.input.capacityAh || '未限定'}} {{report.input.capacityAh ? 'Ah' : ''}}</text>
+</view>
+<view class="row item">
+<text>城市</text>
+<text>{{report.input.region || '未填写'}}</text>
+</view>
+<view class="muted space">未取得的整包重量、材料成分与检测信息不作推断。</view>
+</view>
+ <view wx:if="{{report.result}}" class="card">
+<view class="title">价格怎么来的</view>
+<view>{{report.result.rateLow}}<text wx:if="{{report.result.rateHigh !== report.result.rateLow}}"> — {{report.result.rateHigh}}</text> 元/{{report.basisUnit}} × {{report.input.quantity}} {{report.basisUnit}}</view>
+<view class="muted space">{{report.matchLevel}} · {{report.result.count}} 条来源。未叠加未经核实的回收率、里程或地区系数。</view>
+<button class="ghost full space" bindtap="toggleSources">{{showSources ? '收起来源' : '查看引用的价格记录'}}</button>
+<block wx:if="{{showSources}}">
+<view class="item small" wx:for="{{report.references}}" wx:key="id">
+<view>{{item.brand || item.source}} {{item.capacityAh ? item.capacityAh + 'Ah' : ''}} · {{item.price}} {{item.unit}}</view>
+<view class="muted">{{item.source}} · {{item.period || item.validFrom}}</view>
+<view class="muted">{{item.note}}</view>
+<view class="muted mono">{{item.id}}</view>
+</view>
+</block>
+</view>
+ <view class="card muted">
+<view>生成于 {{created}}</view>
+<view>算法：{{report.algorithmVersion}}</view>
+<view>数据：{{report.catalogVersion}}</view>
+<view class="mono">报告：{{report.id}}</view>
+<view class="space">这是已保存的报告快照；历史报告不会随行情更新而改价。</view>
+</view>
+ <button class="primary full" bindtap="publish">携带参数发布供需</button>
+<view class="grid space">
+<button class="ghost" bindtap="copy">复制报告摘要</button>
+<button class="ghost" bindtap="again">重新估价</button>
+</view>
+</block>
+</view>

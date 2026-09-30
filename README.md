@@ -1,5 +1,15 @@
 # 循电 · Battery Recycling DEMO
 
+## 微信小程序 v0.3.0（新入口）
+
+本仓库已新增原生微信小程序及Node24/SQLite服务端。请先阅读 [微信交付与运行说明](docs/WECHAT_DELIVERY.md)，以及 [数据采集任务](docs/DATA_COLLECTION.md)、[Codex继续执行说明](docs/CODEX_HANDOFF.md)。
+
+本地：复制 `.env.example` 为 `.env`，运行 `npm start`，微信开发者工具导入仓库根目录。开发登录仅供本机联调。运行 `npm test` 和 `npm run check:mini` 验证代码。生产环境需真实AppID、HTTPS域名、服务端密钥和真机验收；当前未部署或提审。
+
+新小程序已接入用户提供的价格归档，缺失的重量基准、车型映射及报价口径会明确标注。**下方旧H5说明仅适用于dist目录；其中Mock数据与公式不用于新小程序。**
+
+## 原H5演示说明
+
 面向客户演示的手机端 H5 Demo，展示动力电池金属材料构成估价、统一评估报告和轻量化回收交易流程。当前为第二版，临时品牌“循电”及全部视觉素材均为项目内原创演示资产。
 
 ## 本地启动

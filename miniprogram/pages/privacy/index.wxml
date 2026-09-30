@@ -1,0 +1,33 @@
+<view class="page">
+<view class="title">隐私说明</view>
+<view class="muted">版本：2026-09-30</view>
+<view wx:if="{{error}}" class="error">{{error}}</view>
+<view class="card space">
+<view class="subtitle">运营主体与联系方式</view>
+<view>{{config.operator || '请连接服务后查看运营主体'}}</view>
+<view>{{config.contact || '请连接服务后查看隐私联系渠道'}}</view>
+</view>
+<view class="card">
+<view class="subtitle">我们保存什么</view>
+<view class="bullet">登录：微信返回的用户标识，用于识别账户。微信密钥与会话密钥不会发送给小程序。</view>
+<view class="bullet">估价：你填写的电池参数、城市和备注、报告结果及所引用的行情快照。</view>
+<view class="bullet">供需：你发布的标题、城市、参数、描述，以及提交的意向报价和主动提供的联系方式。</view>
+<view class="bullet">当前版本不读取相册、通讯录、精确位置或车辆VIN，也不自动收集行驶数据。</view>
+</view>
+<view class="card">
+<view class="subtitle">谁可以看到</view>
+<view class="bullet">报告仅本人可见，关联供需信息不公开报告详情。</view>
+<view class="bullet">供需信息经运营审核后公开；请避免在描述里填写私人联系方式。</view>
+<view class="bullet">意向报价及联系方式只向报价本人和供需发布者提供。提交前单独征求你的同意。</view>
+</view>
+<view class="card">
+<view class="subtitle">保存与删除</view>
+<view class="bullet">业务记录用于提供历史报告和供需沟通，在账户存续期间保存。你可撤下发布，或在「我的」删除账户及在线业务数据。</view>
+<view class="bullet">如运营方启用备份，备份仅用于故障恢复，最长保存30天；删除请求应同步纳入恢复后的删除处理。运营方不得将已删除数据恢复用于业务。</view>
+<view class="bullet">如需查询、纠正数据或有隐私问题，请联系本页列明的运营方。</view>
+</view>
+<view class="card">
+<view class="subtitle">行情数据边界</view>
+<view>当前价格为行情参考，不构成检测结论或收购承诺。原始来源、适用范围、日期和缺失信息会在报告中展示。</view>
+</view>
+</view>

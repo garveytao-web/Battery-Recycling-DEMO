@@ -1,0 +1,30 @@
+<view class="page">
+<view class="hero">
+<view class="eyebrow">XUNDIAN ACCOUNT</view>
+<view class="hero-title">我的循电</view>
+<view class="hero-desc">{{loggedIn ? '已登录，报告与供需记录已同步保存' : '登录后保存估价报告和供需记录'}}</view>
+<button wx:if="{{!loggedIn}}" class="primary full space" bindtap="login">{{devMode ? '本机开发登录' : '微信登录'}}</button>
+</view>
+<view wx:if="{{devMode}}" class="notice">本机开发联调：使用测试账户，尚未切换微信真实身份。</view>
+<view class="card">
+<view class="item" bindtap="history">我的估价报告　›</view>
+<view class="item" bindtap="market">供需与我的发布　›</view>
+<view class="item" bindtap="offers">我提交的意向报价　›</view>
+<view class="item" bindtap="privacy">隐私说明与运营联系渠道　›</view>
+</view>
+<view wx:if="{{error}}" class="error">{{error}}</view>
+<view wx:if="{{showOffers}}" class="card">
+<view class="title">我的意向报价</view>
+<view wx:if="{{!offers.length}}" class="muted">暂无记录</view>
+<view class="item" wx:for="{{offers}}" wx:key="id" data-id="{{item.tradeId}}" bindtap="openOffer">
+<view class="subtitle">{{item.tradeTitle}}</view>
+<view>{{item.price}} {{item.unitLabel}}</view>
+<view class="muted">{{item.displayDate}}</view>
+</view>
+</view>
+<view wx:if="{{loggedIn}}" class="grid">
+<button class="ghost" bindtap="logout">退出登录</button>
+<button class="danger" bindtap="removeAccount">删除账户</button>
+</view>
+<view class="bottom-note">循电 · v0.3.0 · 材料回收参考与供需对接</view>
+</view>

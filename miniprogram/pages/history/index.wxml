@@ -1,0 +1,18 @@
+<view class="page">
+<view class="title">我的估价报告</view>
+<view wx:if="{{error}}" class="error">{{error}}<button bindtap="load" class="ghost space">重试</button>
+</view>
+<view class="card" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="open">
+<view class="row">
+<text class="subtitle">{{item.title}}</text>
+<text class="tag">{{item.statusLabel}}</text>
+</view>
+<view wx:if="{{item.result}}" class="price">¥ {{item.result.low}}<text wx:if="{{item.result.high !== item.result.low}}"> — {{item.result.high}}</text>
+</view>
+<view class="muted">{{item.displayDate}}</view>
+</view>
+<view wx:if="{{!items.length && !loading && !error}}" class="empty">还没有报告<button class="primary space" bindtap="estimate">开始第一次估价</button>
+</view>
+<button wx:if="{{nextOffset !== null && items.length}}" class="ghost" data-more="true" bindtap="load" loading="{{loading}}">加载更多</button>
+<view wx:if="{{loading}}" class="empty">正在读取…</view>
+</view>

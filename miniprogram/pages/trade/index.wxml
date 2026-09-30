@@ -1,0 +1,54 @@
+<view class="page">
+<view wx:if="{{error}}" class="error">{{error}}<button class="ghost space" bindtap="load">刷新</button>
+</view>
+<block wx:if="{{trade}}">
+<view class="card">
+<text class="tag">{{trade.kind === 'supply' ? '供应' : '求购'}} · {{trade.statusLabel}}</text>
+<view class="title space">{{trade.title}}</view>
+<view class="row item">
+<text>材料</text>
+<text>{{trade.chemistryLabel}}</text>
+</view>
+<view class="row item">
+<text>数量</text>
+<text>{{trade.quantity}} {{trade.quantityUnit}}</text>
+</view>
+<view class="row item">
+<text>城市</text>
+<text>{{trade.region}}</text>
+</view>
+<view class="row item">
+<text>报价单位</text>
+<text>{{trade.unitLabel}}</text>
+</view>
+<view class="space">{{trade.description || '暂无补充说明'}}</view>
+</view>
+<view wx:if="{{trade.status === 'pending'}}" class="notice">信息已保存，等待运营审核后公开。</view>
+ <view wx:if="{{!trade.isMine && trade.status === 'approved'}}" class="card">
+<view class="title">提交意向报价</view>
+<text class="label">价格（{{trade.unitLabel}}）</text>
+<input class="input" type="digit" value="{{price}}" data-name="price" bindinput="input" placeholder="输入报价"/>
+<text class="label">联系方式</text>
+<input class="input" value="{{contact}}" data-name="contact" bindinput="input" maxlength="80" placeholder="电话或微信，仅发布者和你可见"/>
+<text class="label">报价条件</text>
+<textarea value="{{message}}" data-name="message" bindinput="input" maxlength="500" placeholder="说明验货、提货与费用承担条件"/>
+<checkbox-group bindchange="consent">
+<label class="check">
+<checkbox value="yes" checked="{{consent}}" color="#146a50"/>同意向发布者提供此联系方式</label>
+</checkbox-group>
+<button class="primary full" loading="{{busy}}" disabled="{{busy}}" bindtap="offer">提交意向</button>
+<view class="muted space">意向报价不构成订单、竞拍成交或支付义务。</view>
+</view>
+ <view class="card">
+<view class="title">{{trade.isMine ? '收到的意向' : '我提交的意向'}}</view>
+<view wx:if="{{!trade.offers.length}}" class="muted">暂无意向报价</view>
+<view class="item" wx:for="{{trade.offers}}" wx:key="id">
+<view class="subtitle">{{item.price}} {{trade.unitLabel}}</view>
+<view>{{item.message}}</view>
+<view>联系方式：{{item.contact}}</view>
+<view class="muted">{{item.displayDate}}</view>
+</view>
+</view>
+<button wx:if="{{trade.isMine && trade.status !== 'withdrawn'}}" class="danger full" bindtap="withdraw">撤下此信息</button>
+</block>
+</view>

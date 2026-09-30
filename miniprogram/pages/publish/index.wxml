@@ -1,0 +1,26 @@
+<view class="page">
+<view class="title">发布供需</view>
+<view class="notice">提交后由运营审核。请勿在公开描述中填写身份证、详细地址或他人联系方式。</view>
+<view class="card">
+<text class="label">信息类型</text>
+<picker class="picker" range="{{kinds}}" value="{{kindIndex}}" data-name="kind" bindchange="change">{{kinds[kindIndex]}}</picker>
+<text class="label">标题 *</text>
+<input class="input" value="{{title}}" data-name="title" bindinput="input" maxlength="80" placeholder="概述电池或采购需求"/>
+<text class="label">电池材料</text>
+<picker class="picker" range="{{chemistries}}" value="{{chemistryIndex}}" data-name="chemistry" bindchange="change">{{chemistries[chemistryIndex]}}</picker>
+<text class="label">城市 *</text>
+<input class="input" value="{{region}}" data-name="region" bindinput="input" maxlength="40" placeholder="货物所在地或采购地区"/>
+<text class="label">数量 *</text>
+<view class="grid">
+<input class="input" type="digit" value="{{quantity}}" data-name="quantity" bindinput="input"/>
+<picker class="picker" range="{{units}}" value="{{unitIndex}}" data-name="unit" bindchange="change">{{units[unitIndex]}}</picker>
+</view>
+<text class="label">接收意向报价的单位</text>
+<picker class="picker" range="{{prices}}" value="{{priceIndex}}" data-name="price" bindchange="change">{{prices[priceIndex]}}</picker>
+<text class="label">补充说明</text>
+<textarea value="{{description}}" data-name="description" bindinput="input" maxlength="1000" placeholder="状态、封装、交付条件等"/>
+<view wx:if="{{reportId}}" class="muted space">已关联你的估价报告，报告详情仍仅本人可见。</view>
+</view>
+<view wx:if="{{error}}" class="error">{{error}}</view>
+<button class="primary full" loading="{{busy}}" disabled="{{busy}}" bindtap="submit">提交审核</button>
+</view>

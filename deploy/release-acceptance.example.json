@@ -1,0 +1,13 @@
+{
+  "devtoolsCompile": false,
+  "realDeviceLogin": false,
+  "realDeviceReport": false,
+  "twoAccountIsolation": false,
+  "domainConfigured": false,
+  "privacyConfigured": false,
+  "dataRightsConfirmed": false,
+  "sourceScopeReviewed": false,
+  "testedAt": "",
+  "tester": "",
+  "evidence": "填写实测设备、开发者工具版本、测试记录路径；不能在未完成时改成true"
+}

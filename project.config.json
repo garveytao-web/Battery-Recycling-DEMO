@@ -1,0 +1,9 @@
+{
+  "description": "循电：退役动力电池材料回收参考估价",
+  "miniprogramRoot": "miniprogram/",
+  "compileType": "miniprogram",
+  "appid": "touristappid",
+  "projectname": "循电",
+  "setting": { "es6": true, "minified": true, "urlCheck": true },
+  "condition": {}
+}

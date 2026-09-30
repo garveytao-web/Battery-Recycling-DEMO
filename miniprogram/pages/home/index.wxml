@@ -1,0 +1,42 @@
+<view class="page">
+  <view class="hero">
+<view class="eyebrow">XUNDIAN · 循电</view>
+<view class="hero-title">
+<view>退役电池的下一站，</view>
+<view>从一份透明估价开始。</view>
+</view>
+<view class="hero-desc">材料回收行情参考 · 保存报告 · 对接供需</view>
+<button class="primary full space" bindtap="estimate">开始估价</button>
+</view>
+  <view class="grid">
+<button class="ghost" bindtap="history">我的报告</button>
+<button class="ghost" bindtap="market">查看供需</button>
+</view>
+  <view class="card space">
+<view class="title">有多少信息，就算到哪一步</view>
+<view class="bullet">01　知道电池类型与电量，可查看参考范围。</view>
+<view class="bullet">02　补充品牌和单体Ah，可缩小来源规格范围。</view>
+<view class="bullet">03　报告保留来源、日期与输入，不编造缺失参数。</view>
+</view>
+  <view wx:if="{{loading}}" class="empty">正在连接行情服务…</view>
+  <view wx:if="{{error}}" class="error">{{error}}<button class="ghost space" bindtap="load">重新连接</button>
+</view>
+  <view wx:if="{{catalog}}" class="card">
+<view class="title">当前数据覆盖</view>
+<view class="row item">
+<text>当前截图可用参考规格</text>
+<text class="value">{{quoteCount}} 条</text>
+</view>
+<view class="row item">
+<text>已核实重量基准</text>
+<text class="value">{{catalog.weightRateCount}} 条</text>
+</view>
+<view class="row item">
+<text>已核实车辆配置</text>
+<text class="value">{{catalog.vehicleCount}} 条</text>
+</view>
+<view class="notice">当前为来源行情参考。重量基准、车型映射和最终交易条件需要逐项核实。</view>
+<view class="muted mono">数据版本 {{catalog.version}}</view>
+</view>
+  <view class="bottom-note" bindtap="privacy">隐私说明与数据用途</view>
+</view>

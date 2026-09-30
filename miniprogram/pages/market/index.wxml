@@ -1,0 +1,27 @@
+<view class="page">
+<view class="row">
+<view class="title">材料回收供需</view>
+<button class="primary" bindtap="publish">发布</button>
+</view>
+<view class="radio-row space">
+<view class="pill {{!mine ? 'active' : ''}}" data-mine="false" bindtap="tab">公开信息</view>
+<view class="pill {{mine ? 'active' : ''}}" data-mine="true" bindtap="tab">我的发布</view>
+</view>
+<view class="notice">供需信息审核后公开。意向报价用于后续沟通，不产生订单、竞拍或付款。</view>
+<view wx:if="{{error}}" class="error">{{error}}<button class="ghost space" bindtap="load">重试</button>
+</view>
+<view wx:for="{{items}}" wx:key="id" class="card" data-id="{{item.id}}" bindtap="open">
+<view class="row">
+<text class="tag">{{item.kind === 'supply' ? '供应' : '求购'}} · {{item.chemistryLabel}}</text>
+<text class="muted">{{item.statusLabel}}</text>
+</view>
+<view class="subtitle space">{{item.title}}</view>
+<view class="row space">
+<text>{{item.quantity}} {{item.quantityUnit}}</text>
+<text>{{item.region}}</text>
+</view>
+<view class="muted">意向报价单位：{{item.unitLabel}}</view>
+</view>
+<view wx:if="{{!items.length && !loading && !error}}" class="empty">{{mine ? '你还没有发布供需信息' : '暂无已审核的供需信息'}}</view>
+<view wx:if="{{loading}}" class="empty">正在读取…</view>
+</view>
