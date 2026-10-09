@@ -39,3 +39,22 @@ test('估价失败保留输入并显示错误，报告页只读取保存快照',
   const reportPage = page('report', { api: async url => { called = url; return saved; }, date: value => value, chemistryNames: { lfp: '磷酸铁锂' }, formNames: { prismatic: '方形' } });
   reportPage.reportId = saved.id; await reportPage.load(); assert.equal(called, '/api/reports/' + saved.id); assert.equal(reportPage.data.report, saved);
 });
+
+test('客户界面不暴露底库规模、计算公式、来源或版本', () => {
+  const read = relative => fs.readFileSync(path.join(__dirname, '../miniprogram', relative), 'utf8');
+  const report = read('pages/report/index.wxml') + read('pages/report/index.js');
+  const home = read('pages/home/index.wxml') + read('pages/home/index.js');
+  const estimatePage = read('pages/estimate/index.wxml');
+  for (const text of ['价格计算', '容量交叉校验', '来源与版本', '动力再生', 'algorithmVersion', 'pricingVersion', 'report.warnings']) assert.doesNotMatch(report, new RegExp(text));
+  assert.doesNotMatch(home, /当前数据覆盖|vehicleCount|ConfigurationCount/);
+  assert.doesNotMatch(estimatePage, /不参与价格计算|重量主估值|电量用于交叉校验/);
+  assert.match(report, /主要金属含量参考/);
+});
+
+test('开发版提供双身份供需联调入口', () => {
+  const me = fs.readFileSync(path.join(__dirname, '../miniprogram/pages/me/index.wxml'), 'utf8');
+  const api = fs.readFileSync(path.join(__dirname, '../miniprogram/utils/api.js'), 'utf8');
+  assert.match(me, /身份 A · 发布方/);
+  assert.match(me, /身份 B · 报价方/);
+  assert.match(api, /identity: value === 'B' \? 'buyer-b' : 'local-developer'/);
+});

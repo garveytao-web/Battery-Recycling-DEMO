@@ -17,16 +17,5 @@
     <view class="step-row"><text class="step-number">01</text><view><view class="subtitle">公告车型</view><view class="muted small">搜索公告型号，选择候选电池配置。</view></view></view>
     <view class="step-row"><text class="step-number">02</text><view><view class="subtitle">铭牌参数</view><view class="muted small">冷门或停产车型，填写化学体系、外形、总重量和总电量。</view></view></view>
   </view>
-  <view wx:if="{{loading}}" class="empty">正在连接数据服务…</view>
-  <view wx:if="{{error}}" class="error">{{error}}<button class="ghost space" bindtap="load">重新连接</button></view>
-  <view wx:if="{{catalog}}" class="card coverage-card">
-    <view class="title">当前数据覆盖</view>
-    <view class="row item"><text>可检索公告车型</text><text class="value">{{catalog.vehicleCount}} 个</text></view>
-    <view class="row item"><text>候选电池配置</text><text class="value">{{catalog.vehicleConfigurationCount}} 条</text></view>
-    <view class="row item"><text>可直接估价配置</text><text class="value">{{catalog.priceReadyConfigurationCount}} 条</text></view>
-    <view class="row item"><text>重量分类基准</text><text class="value">{{catalog.weightRateCount}} 组</text></view>
-    <view class="notice">未公开的电池包型号会明确显示“未公开”，不补造缺失字段。</view>
-    <view class="muted mono small">数据版本 {{catalog.version}}</view>
-  </view>
   <view class="bottom-note" bindtap="privacy">隐私说明与数据用途</view>
 </view>

@@ -5,7 +5,14 @@
 <view class="hero-desc">{{loggedIn ? '已登录，报告与供需记录已同步保存' : '登录后保存估价报告和供需记录'}}</view>
 <button wx:if="{{!loggedIn}}" class="primary full space" bindtap="login">{{devMode ? '本机开发登录' : '微信登录'}}</button>
 </view>
-<view wx:if="{{devMode}}" class="notice">本机开发联调：使用测试账户，尚未切换微信真实身份。</view>
+<view wx:if="{{devMode}}" class="card dev-account-card">
+<view class="row"><view><view class="title">供需联调身份</view><view class="small muted">仅开发版本显示，身份 A 保留现有测试发布</view></view><text class="tag">当前 {{devIdentity}}</text></view>
+<view class="mode-switch space">
+<view class="mode-button {{devIdentity === 'A' ? 'active' : ''}}" data-identity="A" bindtap="switchIdentity">身份 A · 发布方</view>
+<view class="mode-button {{devIdentity === 'B' ? 'active' : ''}}" data-identity="B" bindtap="switchIdentity">身份 B · 报价方</view>
+</view>
+<view class="small muted">切换后进入供需大厅，即可用另一身份发布或提交意向报价。</view>
+</view>
 <view class="card">
 <view class="item" bindtap="history">我的估价报告　›</view>
 <view class="item" bindtap="market">供需与我的发布　›</view>

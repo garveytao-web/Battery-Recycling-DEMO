@@ -21,7 +21,11 @@ async function login(app, identity) { const result = await app.call('/api/auth/d
 test('公开目录与车型检索返回分组候选配置', async () => {
   const app = await start();
   try {
-    const catalog = await app.call('/api/catalog'); assert.equal(catalog.body.vehicleCount, 651);
+    const catalog = await app.call('/api/catalog');
+    assert.equal(catalog.status, 200);
+    assert.equal(Object.hasOwn(catalog.body, 'vehicleCount'), false);
+    assert.equal(Object.hasOwn(catalog.body, 'pricingVersion'), false);
+    assert.equal(Object.hasOwn(catalog.body, 'materials'), false);
     const exact = await app.call('/api/vehicles?q=i7%20xDrive60L%2051EJ'); assert.equal(exact.body.items[0].publicModel, 'i7 xDrive60L 51EJ');
     assert.ok(exact.body.items[0].configurations.length >= 1);
     assert.equal((await app.call('/api/vehicles?q=x')).body.items.length, 0);
@@ -34,6 +38,8 @@ test('报告端到端：登录、估价、历史、快照不变、权限隔离',
     const a = await login(app, 'a'), b = await login(app, 'b');
     const created = await app.call('/api/estimates', 'POST', estimateInput, a); assert.equal(created.status, 201);
     const report = created.body; assert.equal(report.result.center, 5076.4);
+    for (const field of ['weightEstimate','energyCheck','warnings','references','algorithmVersion','catalogVersion','pricingVersion']) assert.equal(Object.hasOwn(report, field), false);
+    assert.equal(report.metalContentEstimates[0].name, '锂');
     catalog.pricing.weightRates[0].price = 99999;
     assert.deepEqual((await app.call('/api/reports/' + report.id, 'GET', undefined, a)).body, report);
     assert.equal((await app.call('/api/reports/' + report.id, 'GET', undefined, b)).status, 404);

@@ -4,8 +4,7 @@
   <block wx:if="{{report}}">
     <view class="report-hero"><view class="eyebrow">VALUATION REPORT</view><view class="report-title">{{report.title}}</view><view class="small">{{report.statusLabel}} · {{created}}</view></view>
     <view class="report-body">
-      <view class="card valuation-card"><text class="tag">重量主估值</text><view class="price">¥ {{report.result.low}} — {{report.result.high}}</view><view class="muted">中心值 ¥{{report.result.center}} / 批</view><view class="small muted space">{{report.result.intervalMeaning}}</view></view>
-      <view class="notice" wx:for="{{report.warnings}}" wx:key="*this">{{item}}</view>
+      <view class="card valuation-card"><text class="tag">回收参考估价</text><view class="price">¥ {{report.result.low}} — {{report.result.high}}</view><view class="muted">参考中位价 ¥{{report.result.center}} / 批</view></view>
       <view class="card">
         <view class="title">本次输入快照</view>
         <view class="row item"><text>估价入口</text><text>{{report.input.mode === 'vehicle' ? '公告车型' : '铭牌参数'}}</text></view>
@@ -17,39 +16,19 @@
         <view wx:if="{{report.vehicle}}" class="source-box">
           <view>候选配置：{{report.vehicle.candidateLabel}}</view>
           <view class="small muted">电池包型号：{{report.vehicle.exactPackModel || '公开资料未披露'}}</view>
-          <view class="small muted">材料置信度 {{report.vehicle.chemistryConfidence}} · 外形置信度 {{report.vehicle.formConfidence}}</view>
         </view>
       </view>
       <view class="card">
-        <view class="title">价格计算</view>
-        <view class="formula">{{report.input.massKg}} kg × {{report.weightEstimate.rate}} 元/kg = {{report.weightEstimate.center}} 元</view>
-        <view class="muted small">{{report.weightEstimate.source}} · {{report.weightEstimate.sampleCount}} 条同分类重量样本</view>
-        <view wx:if="{{report.energyCheck.available}}" class="source-box">
-          <view class="subtitle">容量交叉校验</view>
-          <view>{{report.input.energyKwh}} kWh → 等效重量 {{report.energyCheck.equivalentMassKg}} kg → ¥{{report.energyCheck.center}}</view>
-          <view class="small muted">与重量主估值差异 {{report.energyCheck.differencePercent}}% · 质量/电量样本 {{report.energyCheck.sampleCount}} 条</view>
-          <view class="small muted">{{report.energyCheck.conclusion}}</view>
+        <view class="title">主要金属含量参考</view>
+        <view class="muted small">依据电池化学体系与整包重量展示行业区间。</view>
+        <view class="metal-item" wx:for="{{report.metalContentEstimates}}" wx:key="name">
+          <view class="row"><text class="subtitle">{{item.name}}</text><text class="value">{{item.massLowKg}}—{{item.massHighKg}} kg</text></view>
+          <view class="metal-meta"><text>整包占比 {{item.contentLowPercent}}%—{{item.contentHighPercent}}%</text><text wx:if="{{item.marketLow}}">{{item.marketProduct}} {{item.marketLow}}—{{item.marketHigh}} 元/吨</text><text wx:if="{{item.marketSnapshotDate}}">行情日期 {{item.marketSnapshotDate}}</text></view>
         </view>
-        <view wx:elif="{{report.energyCheck}}" class="notice">{{report.energyCheck.conclusion}}</view>
-      </view>
-      <view class="card">
-        <view class="title">相关回收材料行情</view>
-        <view class="muted small">展示来源产品的品位规格与静态市场价，不等于整包金属含量，也不参与本次估价。</view>
-        <view class="item" wx:for="{{report.materialReferences}}" wx:key="name">
-          <view class="row"><text class="subtitle">{{item.name}}</text><text>{{item.low}}—{{item.high}} 元/吨</text></view>
-          <view class="small muted">规格：{{item.grade}}</view><view class="small muted">快照 {{item.snapshotDate}} · {{item.source}}</view>
-        </view>
-      </view>
-      <view class="card">
-        <view class="title">来源与版本</view>
-        <button class="ghost full" bindtap="toggleSources">{{showSources ? '收起来源' : '查看来源记录'}}</button>
-        <block wx:if="{{showSources}}"><view class="item small" wx:for="{{report.references}}" wx:key="index"><view>{{item.type}} · {{item.source}}</view><view wx:if="{{item.price}}" class="muted">{{item.price}} {{item.unit}} · {{item.sampleCount}} 条样本</view></view></block>
-        <view class="muted small space">算法 {{report.algorithmVersion}}</view><view class="muted small">数据 {{report.catalogVersion}}</view><view class="muted small">价格基准 {{report.pricingVersion}}</view><view class="mono small">报告 {{report.id}}</view>
-        <view class="notice space">报告是生成时点的不可变快照。以后重新估价会生成新报告，原报告不会被改写。</view>
       </view>
       <button class="primary full" bindtap="publish">携带参数发布供需</button>
       <view class="grid space"><button class="ghost" bindtap="copy">复制摘要</button><button class="ghost" bindtap="again">重新估价</button></view>
-      <view class="bottom-note">{{report.scope}}</view>
+      <view class="bottom-note"><view>{{report.scope}}</view><view>报告编号 {{report.id}}</view></view>
     </view>
   </block>
 </view>

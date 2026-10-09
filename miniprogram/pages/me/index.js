@@ -1,8 +1,9 @@
-const { api, request, ensureLogin, clearSession, hasSession, prices, date } = require('../../utils/api');
+const { api, request, ensureLogin, switchDevIdentity, getDevIdentity, clearSession, hasSession, prices, date } = require('../../utils/api');
 const config = require('../../config');
-Page({ data: { loggedIn: false, offers: [], showOffers: false, error: '', devMode: config.useDevAuth },
- onShow() { this.setData({ loggedIn: hasSession(), error: '', showOffers: false, offers: [] }); },
+Page({ data: { loggedIn: false, offers: [], showOffers: false, error: '', devMode: config.useDevAuth, devIdentity: 'A', switchingIdentity: false },
+ onShow() { this.setData({ loggedIn: hasSession(), error: '', showOffers: false, offers: [], devIdentity: getDevIdentity() }); },
  async login() { try { await ensureLogin(); this.setData({ loggedIn: hasSession(), error: '' }); } catch(e) { this.setData({ error: e.message }); } },
+ async switchIdentity(e) { const identity = e.currentTarget.dataset.identity; if (this.data.switchingIdentity || identity === this.data.devIdentity) return; this.setData({ switchingIdentity: true, error: '' }); try { await switchDevIdentity(identity); this.setData({ loggedIn: true, devIdentity: identity, showOffers: false, offers: [] }); wx.showToast({ title: `已切换身份${identity}`, icon: 'success' }); } catch(e) { this.setData({ error: e.message }); } finally { this.setData({ switchingIdentity: false }); } },
  history() { wx.navigateTo({ url: '/pages/history/index' }); },
  market() { wx.switchTab({ url: '/pages/market/index' }); },
  privacy() { wx.navigateTo({ url: '/pages/privacy/index' }); },

@@ -63,9 +63,16 @@ test('拒绝缺失、负数与非法枚举，已删除的旧表单字段不起�
   assert.equal(report.result.center, 5076.4);
 });
 
-test('报告附静态材料行情但不计算理论金属贡献', () => {
+test('报告附主要金属区间与静态行情但不计算理论金属贡献', () => {
   const report = estimate(manual, catalog, now);
   assert.ok(report.materialReferences.length >= 2);
+  assert.equal(report.metalContentEstimates.length, 3);
+  assert.equal(report.metalContentEstimates[0].name, '锂');
+  assert.equal(report.metalContentEstimates[0].massLowKg, 3.2);
+  assert.equal(report.metalContentEstimates[0].massHighKg, 6.4);
+  assert.equal(report.metalContentEstimates[0].marketProduct, '工业级碳酸锂');
+  assert.equal(report.metalContentEstimates[1].marketProduct, '1#铜');
+  assert.equal(report.metalContentEstimates[2].marketProduct, 'A00铝');
   assert.equal(Object.hasOwn(report.result, 'metalContribution'), false);
   assert.match(report.scope, /不构成最终收购承诺/);
 });

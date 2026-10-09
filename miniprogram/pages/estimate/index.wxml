@@ -1,7 +1,7 @@
 <view class="page">
   <view class="page-heading">
     <view class="eyebrow">BATTERY VALUATION</view><view class="title">电池回收估价</view>
-    <view class="muted">重量是主估值，电量用于交叉校验。</view>
+    <view class="muted">支持公告车型检索与铭牌参数估价。</view>
   </view>
   <view class="mode-switch">
     <view class="mode-button {{mode === 'vehicle' ? 'active' : ''}}" data-mode="vehicle" bindtap="switchMode">公告车型估价</view>
@@ -14,7 +14,6 @@
       <view class="row"><text class="tag">已选择</text><text class="link" bindtap="clearConfig">重新选择</text></view>
       <view class="subtitle space">{{selectedConfig.publicModel}}</view><view>{{selectedConfig.candidateLabel}}</view>
       <view class="muted small">电池包型号：{{selectedConfig.exactPackModel || '公开资料未披露'}}</view>
-      <view class="muted small">材料置信度 {{selectedConfig.chemistryConfidence}} · 外形置信度 {{selectedConfig.formConfidence}}</view>
     </view>
     <block wx:for="{{vehicleResults}}" wx:key="publicModel" wx:for-item="model">
       <view class="vehicle-result"><view class="subtitle">{{model.publicModel}}</view><view class="muted small">{{model.commonName || '车型名称未补充'}} · {{model.vehicleMaker}}</view>
@@ -37,7 +36,6 @@
     <view class="subtitle">车辆信息</view>
     <text class="label">车辆所在城市</text><input class="input" value="{{region}}" data-name="region" bindinput="input" maxlength="40" placeholder="例如 武汉"/>
     <text class="label">行驶里程（km）</text><input class="input" type="number" value="{{mileageKm}}" data-name="mileageKm" bindinput="input" placeholder="例如 50000"/>
-    <view class="form-hint">城市和里程会写入报告，但不参与价格计算。</view>
   </view>
   <view wx:if="{{error}}" class="error">{{error}}</view>
   <button class="primary full" loading="{{busy}}" disabled="{{busy || (mode === 'vehicle' && !selectedConfig)}}" bindtap="submit">生成估价报告</button>

@@ -4,7 +4,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
-const { estimate, InputError, text, positive, chemistries, forms } = require('./engine.cjs');
+const { estimate, metalContentEstimates, InputError, text, positive, chemistries, forms } = require('./engine.cjs');
 const root = path.resolve(__dirname, '..');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 const id = prefix => `${prefix}-${crypto.randomUUID()}`;
@@ -117,6 +117,34 @@ function createApp(options = {}) {
     if (!row) throw new InputError('报告不存在', 404);
     return JSON.parse(row.body);
   };
+  function publicReport(report) {
+    const publicResult = {
+      low: report.result.low,
+      center: report.result.center,
+      high: report.result.high,
+      unit: report.result.unit
+    };
+    const vehicle = report.vehicle ? {
+      id: report.vehicle.id,
+      publicModel: report.vehicle.publicModel,
+      commonName: report.vehicle.commonName,
+      vehicleMaker: report.vehicle.vehicleMaker,
+      candidateLabel: report.vehicle.candidateLabel,
+      exactPackModel: report.vehicle.exactPackModel
+    } : null;
+    return {
+      id: report.id,
+      createdAt: report.createdAt,
+      title: report.title,
+      status: report.status,
+      statusLabel: report.statusLabel,
+      input: report.input,
+      vehicle,
+      result: publicResult,
+      metalContentEstimates: report.metalContentEstimates || metalContentEstimates(report.input.chemistry, report.input.massKg, getCatalog()),
+      scope: report.scope
+    };
+  }
   const tradeFor = (tradeId, user) => {
     const row = db.prepare('SELECT * FROM trades WHERE id=?').get(tradeId);
     if (!row || (row.status !== 'active' && row.user_id !== user)) throw new InputError('供需信息不存在或未公开', 404);
@@ -139,17 +167,9 @@ function createApp(options = {}) {
       if (method === 'GET' && route === '/health') return send({ ok: true, version: '0.4.0' });
       if (method === 'GET' && route === '/api/config') return send({ devAuth: allowDev, operator: env.OPERATOR_NAME || '开发环境：运营主体待配置', contact: env.OPERATOR_CONTACT || '开发环境：隐私联系渠道待配置', privacyVersion: '2026-09-30' });
       if (method === 'GET' && route === '/api/catalog') {
-        const c = getCatalog(); return send({
-          version: c.version,
-          pricingVersion: c.pricing.version,
+        return send({
           chemistries,
-          forms,
-          weightRateCount: c.pricing.weightRates.length,
-          vehicleCount: c.vehicleMap.searchableModelCount,
-          vehicleConfigurationCount: c.vehicleMap.searchableConfigurationCount,
-          priceReadyConfigurationCount: c.vehicleMap.priceReadyConfigurationCount,
-          materials: c.materials,
-          sourceNotes: c.sourceNotes
+          forms
         });
       }
       if (method === 'GET' && route === '/api/vehicles') {
@@ -185,16 +205,16 @@ function createApp(options = {}) {
       if (method === 'POST' && route === '/api/estimates') {
         const report = estimate(await body(req), getCatalog());
         db.prepare('INSERT INTO reports VALUES (?,?,?,?)').run(report.id, user, report.createdAt, JSON.stringify(report));
-        return send(report, 201);
+        return send(publicReport(report), 201);
       }
       if (method === 'GET' && route === '/api/reports') {
         const offset = Number(url.searchParams.get('offset') || 0);
         if (!Number.isSafeInteger(offset) || offset < 0 || offset > 1000000) throw new InputError('分页参数错误');
         const rows = db.prepare('SELECT body FROM reports WHERE user_id=? ORDER BY created_at DESC LIMIT 50 OFFSET ?').all(user, offset);
-        return send({ items: rows.map(r => { const v = JSON.parse(r.body); return { id: v.id, title: v.title, createdAt: v.createdAt, statusLabel: v.statusLabel, result: v.result }; }), nextOffset: rows.length === 50 ? offset + 50 : null });
+        return send({ items: rows.map(r => { const v = publicReport(JSON.parse(r.body)); return { id: v.id, title: v.title, createdAt: v.createdAt, statusLabel: v.statusLabel, result: v.result }; }), nextOffset: rows.length === 50 ? offset + 50 : null });
       }
       let match = route.match(/^\/api\/reports\/([\w-]+)$/);
-      if (method === 'GET' && match) return send(reportFor(match[1], user));
+      if (method === 'GET' && match) return send(publicReport(reportFor(match[1], user)));
       if (method === 'GET' && route === '/api/trades') {
         const mine = url.searchParams.get('mine') === '1';
         const rows = mine ? db.prepare('SELECT * FROM trades WHERE user_id=? ORDER BY created_at DESC LIMIT 100').all(user) : db.prepare("SELECT * FROM trades WHERE status='active' ORDER BY created_at DESC LIMIT 100").all();

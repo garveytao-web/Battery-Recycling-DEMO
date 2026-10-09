@@ -4006,6 +4006,66 @@
   "vehicles": [],
   "materials": [
     {
+      "name": "1#铜",
+      "grade": "1#",
+      "low": 111210.0,
+      "high": 111250.0,
+      "mid": 111230.0,
+      "unit": "CNY/t",
+      "snapshotDate": "2026-09-29",
+      "source": "https://www.cnmn.com.cn/ShowNews1.aspx?id=474386",
+      "status": "archived_snapshot",
+      "usage": "现货行情参考；不直接参与整包估价"
+    },
+    {
+      "name": "A00铝",
+      "grade": "A00",
+      "low": 24090.0,
+      "high": 24130.0,
+      "mid": 24110.0,
+      "unit": "CNY/t",
+      "snapshotDate": "2026-09-29",
+      "source": "https://www.cnmn.com.cn/ShowNews1.aspx?id=474386",
+      "status": "archived_snapshot",
+      "usage": "现货行情参考；不直接参与整包估价"
+    },
+    {
+      "name": "1#镍",
+      "grade": "1#",
+      "low": 122900.0,
+      "high": 126700.0,
+      "mid": 124800.0,
+      "unit": "CNY/t",
+      "snapshotDate": "2026-09-29",
+      "source": "https://www.cnmn.com.cn/ShowNews1.aspx?id=474386",
+      "status": "archived_snapshot",
+      "usage": "现货行情参考；不直接参与整包估价"
+    },
+    {
+      "name": "1#钴",
+      "grade": "1#",
+      "low": 250000.0,
+      "high": 272000.0,
+      "mid": 261000.0,
+      "unit": "CNY/t",
+      "snapshotDate": "2026-09-29",
+      "source": "https://www.cnmn.com.cn/ShowNews1.aspx?id=474386",
+      "status": "archived_snapshot",
+      "usage": "现货行情参考；不直接参与整包估价"
+    },
+    {
+      "name": "1#电解锰",
+      "grade": "1#",
+      "low": 18900.0,
+      "high": 19100.0,
+      "mid": 19000.0,
+      "unit": "CNY/t",
+      "snapshotDate": "2026-09-29",
+      "source": "https://www.cnmn.com.cn/ShowNews1.aspx?id=474386",
+      "status": "archived_snapshot",
+      "usage": "现货行情参考；不直接参与整包估价"
+    },
+    {
       "name": "三元正极片",
       "grade": "Ni≥22% Co≥7% Li≥6%",
       "low": 64700.0,
