@@ -1,19 +1,25 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { estimate } = require('../server/engine.cjs');
+const { estimate, provinces } = require('../server/engine.cjs');
 const { loadCatalog } = require('../server/index.cjs');
 const { parseCSV, validateRecords } = require('../server/catalog-import.cjs');
 
 const catalog = loadCatalog();
 const now = new Date('2026-10-08T08:00:00Z');
-const manual = { mode: 'manual', chemistry: 'lfp', form: 'prismatic', massKg: 400, energyKwh: 55, mileageKm: 50000, region: '武汉' };
+const manual = { mode: 'manual', chemistry: 'lfp', form: 'prismatic', massKg: 400, energyKwh: 55, mileageKm: 50000, region: '湖北省' };
 
 test('车型与价格数据覆盖达到当前冻结版本', () => {
   assert.equal(catalog.vehicleMap.searchableModelCount, 651);
   assert.equal(catalog.vehicleMap.searchableConfigurationCount, 683);
   assert.equal(catalog.vehicleMap.priceReadyConfigurationCount, 667);
   assert.equal(catalog.pricing.weightRates.length, 9);
+});
+test('省份枚举只包含大陆31个省级地区', () => {
+  assert.equal(provinces.length, 31);
+  assert.ok(provinces.includes('湖北省'));
+  assert.ok(provinces.includes('北京市'));
+  assert.equal(provinces.some(item => /香港|澳门|台湾/.test(item)), false);
 });
 test('重量主算法复现动力再生线性样本', () => {
   const report = estimate(manual, catalog, now);
@@ -25,9 +31,9 @@ test('重量主算法复现动力再生线性样本', () => {
 
 test('地区与里程只进入快照，不改变价格', () => {
   const a = estimate(manual, catalog, now);
-  const b = estimate({ ...manual, region: '上海', mileageKm: 180000 }, catalog, now);
+  const b = estimate({ ...manual, region: '上海市', mileageKm: 180000 }, catalog, now);
   assert.deepEqual(b.result, a.result);
-  assert.equal(b.input.region, '上海');
+  assert.equal(b.input.region, '上海市');
   assert.equal(b.input.mileageKm, 180000);
 });
 
@@ -41,7 +47,7 @@ test('容量沿用重量价格体系交叉校验，不覆盖重量主估值', ()
 
 test('车辆候选配置由服务端快照覆盖客户端伪造字段', () => {
   const vehicle = catalog.vehicles.find(row => row.priceReady && row.energyKwh);
-  const report = estimate({ mode: 'vehicle', vehicleConfigId: vehicle.id, chemistry: 'lfp', form: 'pouch', massKg: 1, energyKwh: 1, mileageKm: 0, region: '北京' }, catalog, now);
+  const report = estimate({ mode: 'vehicle', vehicleConfigId: vehicle.id, chemistry: 'lfp', form: 'pouch', massKg: 1, energyKwh: 1, mileageKm: 0, region: '北京市' }, catalog, now);
   assert.equal(report.input.massKg, vehicle.massKg);
   assert.equal(report.input.energyKwh, vehicle.energyKwh);
   assert.equal(report.input.chemistry, vehicle.chemistry);
@@ -51,13 +57,18 @@ test('车辆候选配置由服务端快照覆盖客户端伪造字段', () => {
 test('歧义车型配置保留但不能静默进入估价', () => {
   const ambiguous = catalog.vehicles.find(row => !row.priceReady);
   assert.ok(ambiguous);
-  assert.throws(() => estimate({ mode: 'vehicle', vehicleConfigId: ambiguous.id, mileageKm: 0, region: '武汉' }, catalog, now), /铭牌参数/);
+  assert.throws(() => estimate({ mode: 'vehicle', vehicleConfigId: ambiguous.id, mileageKm: 0, region: '湖北省' }, catalog, now), /铭牌参数/);
 });
 
 test('拒绝缺失、负数与非法枚举，已删除的旧表单字段不起作用', () => {
   assert.throws(() => estimate({ ...manual, massKg: 0 }, catalog, now));
   assert.throws(() => estimate({ ...manual, energyKwh: '' }, catalog, now));
   assert.throws(() => estimate({ ...manual, mileageKm: -1 }, catalog, now));
+  assert.throws(() => estimate({ ...manual, mileageKm: '1.5' }, catalog, now), /非负整数/);
+  assert.throws(() => estimate({ ...manual, massKg: '4e2' }, catalog, now), /只能填写数字/);
+  assert.throws(() => estimate({ ...manual, massKg: '400kg' }, catalog, now), /只能填写数字/);
+  assert.throws(() => estimate({ ...manual, region: '武汉市' }, catalog, now), /省份/);
+  assert.throws(() => estimate({ ...manual, region: '香港特别行政区' }, catalog, now), /省份/);
   assert.throws(() => estimate({ ...manual, chemistry: 'lead' }, catalog, now));
   const report = estimate({ ...manual, condition: 'burned', capacityAh: 280, goods: 'cell' }, catalog, now);
   assert.equal(report.result.center, 5076.4);

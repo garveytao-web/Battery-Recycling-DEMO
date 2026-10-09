@@ -8,7 +8,7 @@ const { createApp, loadCatalog } = require('../server/index.cjs');
 
 const original = loadCatalog();
 const env = { NODE_ENV: 'test', HOST: '127.0.0.1', ALLOW_DEV_AUTH: 'true' };
-const estimateInput = { mode: 'manual', chemistry: 'lfp', form: 'prismatic', massKg: 400, energyKwh: 55, mileageKm: 50000, region: '武汉' };
+const estimateInput = { mode: 'manual', chemistry: 'lfp', form: 'prismatic', massKg: 400, energyKwh: 55, mileageKm: 50000, region: '湖北省' };
 
 async function start(options = {}) {
   const app = createApp({ env, dbPath: ':memory:', getCatalog: () => original, ...options });
@@ -36,6 +36,8 @@ test('报告端到端：登录、估价、历史、快照不变、权限隔离',
   try {
     assert.equal((await app.call('/api/estimates', 'POST', estimateInput)).status, 401);
     const a = await login(app, 'a'), b = await login(app, 'b');
+    assert.equal((await app.call('/api/estimates', 'POST', { ...estimateInput, region: '武汉市' }, a)).status, 400);
+    assert.equal((await app.call('/api/estimates', 'POST', { ...estimateInput, massKg: '4e2' }, a)).status, 400);
     const created = await app.call('/api/estimates', 'POST', estimateInput, a); assert.equal(created.status, 201);
     const report = created.body; assert.equal(report.result.center, 5076.4);
     for (const field of ['weightEstimate','energyCheck','warnings','references','algorithmVersion','catalogVersion','pricingVersion']) assert.equal(Object.hasOwn(report, field), false);
@@ -60,14 +62,18 @@ test('供需发布通过自动文本安全检查后立即公开，报价保持�
   try {
     const a = await login(app, 'a'), b = await login(app, 'b'), c = await login(app, 'c');
     const report = (await app.call('/api/estimates', 'POST', estimateInput, a)).body;
-    const input = { title: '测试电池包', region: '武汉', kind: 'supply', chemistry: 'lfp', quantity: 400, quantityUnit: 'kg', priceUnit: 'CNY/kg', reportId: report.id, description: '现场核对铭牌' };
+    const input = { title: '测试电池包', region: '湖北省', kind: 'supply', chemistry: 'lfp', quantity: 400, quantityUnit: 'kg', priceUnit: 'CNY/kg', reportId: report.id, description: '现场核对铭牌' };
+    assert.equal((await app.call('/api/trades', 'POST', { ...input, region: '台湾省' }, a)).status, 400);
+    assert.equal((await app.call('/api/trades', 'POST', { ...input, quantity: '4e2' }, a)).status, 400);
     assert.equal((await app.call('/api/trades', 'POST', { ...input, title: '拦截词' }, a)).status, 400);
     const created = await app.call('/api/trades', 'POST', input, a); assert.equal(created.status, 201); assert.equal(created.body.status, 'active');
     assert.equal(checks.length, 2);
     const trade = created.body;
     assert.equal((await app.call('/api/trades', 'GET', undefined, b)).body.items.length, 1);
-    const offer = { price: 11, contact: '仅测试联系方式', message: '现场验货', contactConsent: true };
+    const offer = { price: 11, contact: '13800138000', message: '现场验货', contactConsent: true };
     assert.equal((await app.call('/api/trades/' + trade.id + '/offers', 'POST', offer, a)).status, 400);
+    assert.equal((await app.call('/api/trades/' + trade.id + '/offers', 'POST', { ...offer, contact: '1380013800x' }, b)).status, 400);
+    assert.equal((await app.call('/api/trades/' + trade.id + '/offers', 'POST', { ...offer, contact: '1380013800' }, b)).status, 400);
     assert.equal((await app.call('/api/trades/' + trade.id + '/offers', 'POST', offer, b)).status, 201);
     assert.equal((await app.call('/api/trades/' + trade.id, 'GET', undefined, a)).body.offers.length, 1);
     assert.equal((await app.call('/api/trades/' + trade.id, 'GET', undefined, c)).body.offers.length, 0);

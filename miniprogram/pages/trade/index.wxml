@@ -14,7 +14,7 @@
 <text>{{trade.quantity}} {{trade.quantityUnit}}</text>
 </view>
 <view class="row item">
-<text>城市</text>
+<text>省份</text>
 <text>{{trade.region}}</text>
 </view>
 <view class="row item">
@@ -27,13 +27,13 @@
 <view class="title">提交意向报价</view>
 <text class="label">价格（{{trade.unitLabel}}）</text>
 <input class="input" type="digit" value="{{price}}" data-name="price" bindinput="input" placeholder="输入报价"/>
-<text class="label">联系方式</text>
-<input class="input" value="{{contact}}" data-name="contact" bindinput="input" maxlength="80" placeholder="电话或微信，仅发布者和你可见"/>
+<text class="label">手机号</text>
+<input class="input" type="number" value="{{contact}}" data-name="contact" bindinput="input" maxlength="11" placeholder="11位手机号，仅发布者和你可见"/>
 <text class="label">报价条件</text>
 <textarea value="{{message}}" data-name="message" bindinput="input" maxlength="500" placeholder="说明验货、提货与费用承担条件"/>
 <checkbox-group bindchange="consent">
 <label class="check">
-<checkbox value="yes" checked="{{consent}}" color="#146a50"/>同意向发布者提供此联系方式</label>
+<checkbox value="yes" checked="{{consent}}" color="#146a50"/>同意向发布者提供此手机号</label>
 </checkbox-group>
 <button class="primary full" loading="{{busy}}" disabled="{{busy}}" bindtap="offer">提交意向</button>
 <view class="muted space">意向报价不构成订单、竞拍成交或支付义务。</view>
@@ -44,7 +44,7 @@
 <view class="item" wx:for="{{trade.offers}}" wx:key="id">
 <view class="subtitle">{{item.price}} {{trade.unitLabel}}</view>
 <view>{{item.message}}</view>
-<view>联系方式：{{item.contact}}</view>
+<view>手机号：{{item.contact}}</view>
 <view class="muted">{{item.displayDate}}</view>
 </view>
 </view>

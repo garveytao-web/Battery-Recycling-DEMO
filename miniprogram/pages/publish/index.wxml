@@ -8,8 +8,8 @@
 <input class="input" value="{{title}}" data-name="title" bindinput="input" maxlength="80" placeholder="概述电池或采购需求"/>
 <text class="label">电池材料</text>
 <picker class="picker" range="{{chemistries}}" value="{{chemistryIndex}}" data-name="chemistry" bindchange="change">{{chemistries[chemistryIndex]}}</picker>
-<text class="label">城市 *</text>
-<input class="input" value="{{region}}" data-name="region" bindinput="input" maxlength="40" placeholder="货物所在地或采购地区"/>
+<text class="label">省份 *</text>
+<picker class="picker" range="{{provinces}}" value="{{provinceIndex}}" bindchange="changeProvince">{{region || '请选择省份'}}</picker>
 <text class="label">数量 *</text>
 <view class="grid">
 <input class="input" type="digit" value="{{quantity}}" data-name="quantity" bindinput="input"/>

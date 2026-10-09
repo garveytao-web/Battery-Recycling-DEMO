@@ -12,7 +12,7 @@
         <view class="row item"><text>材料 / 单体外形</text><text>{{chemistry}} / {{form}}</text></view>
         <view class="row item"><text>整包总重量</text><text>{{report.input.massKg}} kg</text></view>
         <view class="row item"><text>整包总电量</text><text>{{report.input.energyKwh || '未公开'}}{{report.input.energyKwh ? ' kWh' : ''}}</text></view>
-        <view class="row item"><text>城市 / 里程</text><text>{{report.input.region}} / {{report.input.mileageKm}} km</text></view>
+        <view class="row item"><text>省份 / 里程</text><text>{{report.input.region}} / {{report.input.mileageKm}} km</text></view>
         <view wx:if="{{report.vehicle}}" class="source-box">
           <view>候选配置：{{report.vehicle.candidateLabel}}</view>
           <view class="small muted">电池包型号：{{report.vehicle.exactPackModel || '公开资料未披露'}}</view>

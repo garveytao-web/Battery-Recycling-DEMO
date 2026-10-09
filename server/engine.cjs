@@ -9,6 +9,15 @@ const chemistries = {
   small_ncm: '小三元'
 };
 const forms = { prismatic: '方形', pouch: '软包', cylindrical: '圆柱形' };
+const provinces = [
+  '北京市', '天津市', '河北省', '山西省', '内蒙古自治区',
+  '辽宁省', '吉林省', '黑龙江省', '上海市', '江苏省',
+  '浙江省', '安徽省', '福建省', '江西省', '山东省',
+  '河南省', '湖北省', '湖南省', '广东省', '广西壮族自治区',
+  '海南省', '重庆市', '四川省', '贵州省', '云南省',
+  '西藏自治区', '陕西省', '甘肃省', '青海省', '宁夏回族自治区',
+  '新疆维吾尔自治区'
+];
 
 class InputError extends Error {
   constructor(message, status = 400) {
@@ -23,6 +32,7 @@ function text(value, max = 100) {
 
 function positive(value, label, max = 1000000) {
   if (!['string', 'number'].includes(typeof value) || String(value).trim() === '') throw new InputError(`请填写${label}`);
+  if (typeof value === 'string' && !/^\d+(?:\.\d+)?$/.test(value.trim())) throw new InputError(`${label}只能填写数字`);
   const number = Number(value);
   if (!Number.isFinite(number) || number <= 0 || number > max) throw new InputError(`${label}须大于0且不超过${max}`);
   return number;
@@ -30,9 +40,22 @@ function positive(value, label, max = 1000000) {
 
 function nonNegative(value, label, max = 2000000) {
   if (!['string', 'number'].includes(typeof value) || String(value).trim() === '') throw new InputError(`请填写${label}`);
+  if (typeof value === 'string' && !/^\d+$/.test(value.trim())) throw new InputError(`${label}只能填写非负整数`);
   const number = Number(value);
-  if (!Number.isFinite(number) || number < 0 || number > max) throw new InputError(`${label}须为0至${max}之间的数字`);
+  if (!Number.isSafeInteger(number) || number < 0 || number > max) throw new InputError(`${label}须为0至${max}之间的整数`);
   return number;
+}
+
+function province(value) {
+  const result = text(value, 20);
+  if (!provinces.includes(result)) throw new InputError('请选择车辆所在省份');
+  return result;
+}
+
+function phone(value) {
+  const result = text(value, 20);
+  if (!/^\d{11}$/.test(result)) throw new InputError('手机号须为11位纯数字');
+  return result;
 }
 
 const money = value => Math.round(value * 100) / 100;
@@ -73,11 +96,10 @@ function estimate(raw, catalog, now = new Date()) {
 
   const common = {
     mode,
-    region: text(raw.region, 40),
+    region: province(raw.region),
     mileageKm: nonNegative(raw.mileageKm, '车辆里程（km）'),
     producer: text(raw.producer, 80)
   };
-  if (!common.region) throw new InputError('请填写车辆所在城市');
 
   let vehicle = null;
   let chemistry;
@@ -197,4 +219,4 @@ function estimate(raw, catalog, now = new Date()) {
   };
 }
 
-module.exports = { estimate, InputError, positive, nonNegative, text, VERSION, chemistries, forms };
+module.exports = { estimate, InputError, positive, nonNegative, province, phone, text, VERSION, chemistries, forms, provinces };

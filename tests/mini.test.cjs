@@ -6,6 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { loadCatalog } = require('../server/index.cjs');
 const { estimate } = require('../server/engine.cjs');
+const validation = require('../miniprogram/utils/validation');
 const catalog = loadCatalog();
 
 function page(name, utils, wx = {}) {
@@ -16,8 +17,8 @@ function page(name, utils, wx = {}) {
 
 test('铭牌估价表单只发送确认后的核心字段', async () => {
   let saved; let route;
-  const p = page('estimate', { api: async (url, method, payload) => { assert.equal(url, '/api/estimates'); saved = estimate(payload, catalog, new Date('2026-10-08')); return saved; }, request: async () => ({ items: [] }) }, { redirectTo(value) { route = value.url; } });
-  p.setData({ mode: 'manual', massKg: '400', energyKwh: '55', mileageKm: '50000', region: '武汉' }); await p.submit();
+  const p = page('estimate', { ...validation, api: async (url, method, payload) => { assert.equal(url, '/api/estimates'); saved = estimate(payload, catalog, new Date('2026-10-08')); return saved; }, request: async () => ({ items: [] }) }, { redirectTo(value) { route = value.url; } });
+  p.setData({ mode: 'manual', massKg: '400', energyKwh: '55', mileageKm: '50000', region: '湖北省' }); await p.submit();
   assert.equal(saved.input.massKg, 400); assert.equal(saved.input.energyKwh, 55); assert.equal(saved.input.mode, 'manual');
   assert.equal(Object.hasOwn(saved.input, 'capacityAh'), false); assert.equal(route, '/pages/report/index?id=' + saved.id);
 });
@@ -25,16 +26,16 @@ test('铭牌估价表单只发送确认后的核心字段', async () => {
 test('公告车型检索保留多个候选并提交所选配置ID', async () => {
   const model = catalog.vehicleMap.models.find(item => item.configurations.length > 1);
   let payload;
-  const p = page('estimate', { request: async () => ({ items: [model] }), api: async (url, method, body) => { payload = body; return { id: 'XR-1' }; } }, { redirectTo() {} });
-  p.setData({ vehicleQuery: model.publicModel, mileageKm: '0', region: '北京' }); await p.searchVehicle();
+  const p = page('estimate', { ...validation, request: async () => ({ items: [model] }), api: async (url, method, body) => { payload = body; return { id: 'XR-1' }; } }, { redirectTo() {} });
+  p.setData({ vehicleQuery: model.publicModel, mileageKm: '0', region: '北京市' }); await p.searchVehicle();
   p.selectConfig({ currentTarget: { dataset: { id: model.configurations[1].id } } }); await p.submit();
   assert.equal(payload.vehicleConfigId, model.configurations[1].id); assert.equal(payload.mode, 'vehicle');
 });
 
 test('估价失败保留输入并显示错误，报告页只读取保存快照', async () => {
-  const estimatePage = page('estimate', { api: async () => { throw new Error('缺少总重量'); } });
-  estimatePage.setData({ mode: 'manual', massKg: '' }); await estimatePage.submit(); assert.equal(estimatePage.data.error, '缺少总重量');
-  const saved = estimate({ mode: 'manual', chemistry: 'lfp', form: 'prismatic', massKg: 400, energyKwh: 55, mileageKm: 0, region: '武汉' }, catalog, new Date('2026-10-08'));
+  const estimatePage = page('estimate', { ...validation, api: async () => { throw new Error('不应发送请求'); } });
+  estimatePage.setData({ mode: 'manual', region: '湖北省', mileageKm: '0', massKg: '', energyKwh: '55' }); await estimatePage.submit(); assert.equal(estimatePage.data.error, '电池包总重量只能填写数字且须大于0');
+  const saved = estimate({ mode: 'manual', chemistry: 'lfp', form: 'prismatic', massKg: 400, energyKwh: 55, mileageKm: 0, region: '湖北省' }, catalog, new Date('2026-10-08'));
   let called = '';
   const reportPage = page('report', { api: async url => { called = url; return saved; }, date: value => value, chemistryNames: { lfp: '磷酸铁锂' }, formNames: { prismatic: '方形' } });
   reportPage.reportId = saved.id; await reportPage.load(); assert.equal(called, '/api/reports/' + saved.id); assert.equal(reportPage.data.report, saved);
@@ -66,6 +67,26 @@ test('四项界面调整保留单行操作、小三元简称与轮播图增深�
   assert.match(homeScript, /banner-3\.png', tone: 'deep'/);
   assert.match(homeMarkup, /class="banner-tint"/);
   assert.match(styles, /\.banner-tint\s*\{/);
+});
+
+test('省份下拉、数字字段、11位手机号与估价标签单行校验已接入', async () => {
+  const read = relative => fs.readFileSync(path.join(__dirname, '../miniprogram', relative), 'utf8');
+  const estimateMarkup = read('pages/estimate/index.wxml');
+  const publishMarkup = read('pages/publish/index.wxml');
+  const tradeMarkup = read('pages/trade/index.wxml');
+  const historyMarkup = read('pages/history/index.wxml');
+  const styles = read('app.wxss');
+  assert.match(estimateMarkup, /range="\{\{provinces\}\}"/);
+  assert.match(publishMarkup, /range="\{\{provinces\}\}"/);
+  assert.doesNotMatch(estimateMarkup + publishMarkup, /车辆所在城市|<text class="label">城市/);
+  assert.match(tradeMarkup, /type="number"[^>]*maxlength="11"/);
+  assert.match(historyMarkup, /history-title/);
+  assert.match(styles, /\.tag\s*\{[^}]*white-space:nowrap/);
+  assert.equal(validation.provinces.length, 31);
+  assert.equal(validation.isPositiveNumber('420.5'), true);
+  assert.equal(validation.isPositiveNumber('4e2'), false);
+  assert.equal(validation.isPhone('13800138000'), true);
+  assert.equal(validation.isPhone('1380013800x'), false);
 });
 
 test('开发版提供双身份供需联调入口', () => {

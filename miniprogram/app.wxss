@@ -54,7 +54,8 @@ textarea { height:180rpx; }
 .config-label { flex:1; min-width:0; }
 .config-action { flex-shrink:0; white-space:nowrap; color:#0b7558; font-weight:700; }
 .selected-config,.source-box,.formula { margin-top:20rpx; padding:22rpx; border-left:6rpx solid #0b7558; border-radius:16rpx; background:#eff7f2; }
-.tag { display:inline-flex; padding:6rpx 16rpx; border:1rpx solid #cfe8dc; border-radius:999rpx; background:#e8f5ef; color:#0b7558; font-size:22rpx; }
+.tag { display:inline-flex; flex-shrink:0; padding:6rpx 16rpx; border:1rpx solid #cfe8dc; border-radius:999rpx; background:#e8f5ef; color:#0b7558; font-size:22rpx; white-space:nowrap; }
+.history-title { flex:1; min-width:0; }
 .link { color:#0b7558; }
 .notice { margin:16rpx 0; padding:20rpx 22rpx; border-radius:18rpx; background:#fff5dd; color:#805f2c; font-size:23rpx; line-height:1.7; }
 .error { margin:18rpx 0; padding:22rpx; border-radius:18rpx; background:#ffede9; color:#a13626; word-break:break-all; }

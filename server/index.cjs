@@ -4,7 +4,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
-const { estimate, InputError, text, positive, chemistries, forms } = require('./engine.cjs');
+const { estimate, InputError, text, positive, province, phone, chemistries, forms } = require('./engine.cjs');
 const root = path.resolve(__dirname, '..');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 const id = prefix => `${prefix}-${crypto.randomUUID()}`;
@@ -235,8 +235,8 @@ function createApp(options = {}) {
         return send({ items: rows.map(r => publicTrade(r, user)) });
       }
       if (method === 'POST' && route === '/api/trades') {
-        const raw = await body(req); const title = text(raw.title, 80); const region = text(raw.region, 40);
-        if (title.length < 2 || !region) throw new InputError('请填写标题和所在城市');
+        const raw = await body(req); const title = text(raw.title, 80); const region = province(raw.region);
+        if (title.length < 2) throw new InputError('请填写至少2个字符的标题');
         if (!['supply','demand'].includes(raw.kind)) throw new InputError('供需类型错误');
         if (!['CNY/batch','CNY/kg','CNY/kWh'].includes(raw.priceUnit)) throw new InputError('请选择报价单位');
         const chemistry = text(raw.chemistry); if (!Object.hasOwn(chemistries, chemistry)) throw new InputError('请选择电池类型');
@@ -264,9 +264,8 @@ function createApp(options = {}) {
         if (method === 'POST' && match[2]) {
           if (row.status !== 'active') throw new InputError('当前信息未开放报价');
           if (row.user_id === user) throw new InputError('不能向自己的信息提交报价');
-          const raw = await body(req); const offer = { price: positive(raw.price, '意向单价/总价', 100000000), priceUnit: trade.priceUnit, message: text(raw.message, 500), contact: text(raw.contact, 80), tradeTitle: trade.title };
-          if (!offer.contact) throw new InputError('请填写供发布者联系的方式');
-          if (raw.contactConsent !== true) throw new InputError('请确认将联系方式提供给发布者');
+          const raw = await body(req); const offer = { price: positive(raw.price, '意向单价/总价', 100000000), priceUnit: trade.priceUnit, message: text(raw.message, 500), contact: phone(raw.contact), tradeTitle: trade.title };
+          if (raw.contactConsent !== true) throw new InputError('请确认将手机号提供给发布者');
           const offerId = id('O'); const createdAt = new Date().toISOString();
           db.prepare('INSERT INTO offers VALUES (?,?,?,?,?)').run(offerId, row.id, user, createdAt, JSON.stringify(offer));
           return send({ id: offerId, createdAt, ...offer }, 201);

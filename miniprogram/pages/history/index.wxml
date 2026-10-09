@@ -4,7 +4,7 @@
 </view>
 <view class="card" wx:for="{{items}}" wx:key="id" data-id="{{item.id}}" bindtap="open">
 <view class="row">
-<text class="subtitle">{{item.title}}</text>
+<text class="subtitle history-title">{{item.title}}</text>
 <text class="tag">{{item.statusLabel}}</text>
 </view>
 <view wx:if="{{item.result}}" class="price">¥ {{item.result.low}}<text wx:if="{{item.result.high !== item.result.low}}"> — {{item.result.high}}</text>

@@ -34,7 +34,7 @@
   </view>
   <view class="card">
     <view class="subtitle">车辆信息</view>
-    <text class="label">车辆所在城市</text><input class="input" value="{{region}}" data-name="region" bindinput="input" maxlength="40" placeholder="例如 武汉"/>
+    <text class="label">车辆所在省份</text><picker class="picker" range="{{provinces}}" value="{{provinceIndex}}" bindchange="changeProvince">{{region || '请选择省份'}}</picker>
     <text class="label">行驶里程（km）</text><input class="input" type="number" value="{{mileageKm}}" data-name="mileageKm" bindinput="input" placeholder="例如 50000"/>
   </view>
   <view wx:if="{{error}}" class="error">{{error}}</view>
