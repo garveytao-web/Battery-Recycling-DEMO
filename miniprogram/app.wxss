@@ -11,8 +11,7 @@ page { background:#f3f7f4; color:#233b35; font-family:-apple-system,BlinkMacSyst
 .space { margin-top:20rpx; }
 .full { width:100%; }
 .row { display:flex; align-items:center; justify-content:space-between; gap:18rpx; }
-.grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:18rpx; }
-.grid > * { min-width:0; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:18rpx; }
 .card { box-sizing:border-box; margin-bottom:24rpx; padding:30rpx; border:1rpx solid #dfe9e3; border-radius:28rpx; background:#fff; box-shadow:0 8rpx 32rpx rgba(23,76,56,.06); }
 .quick-card { border-top:6rpx solid #0b7558; }
 .brand-lockup { display:flex; align-items:center; gap:16rpx; margin-bottom:20rpx; }
