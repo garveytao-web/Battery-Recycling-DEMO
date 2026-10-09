@@ -9,6 +9,9 @@ function checkJS(file) { const content = fs.readFileSync(file,'utf8'); try { new
 for (const page of app.pages) {
   const file = path.join(root,page); let pageDef;
   try {
+    const pageConfigFile = file + '.json';
+    if (!fs.existsSync(pageConfigFile)) failures.push(`${page}: 缺少页面配置JSON`);
+    else JSON.parse(fs.readFileSync(pageConfigFile,'utf8'));
     checkJS(file+'.js');
     vm.runInNewContext(fs.readFileSync(file+'.js','utf8'), { Page(p) { pageDef = p; }, require() { return {}; } }, {filename:file+'.js'});
     const wxml = fs.readFileSync(file+'.wxml','utf8');
