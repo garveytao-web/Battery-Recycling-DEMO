@@ -21,7 +21,7 @@ for (const page of app.pages) {
     }
     if (stack.length) failures.push(`${page}: 未闭合标签 ${stack.join(',')}`);
     for (const m of wxml.matchAll(/(?:bind|catch)(?:\w+|:\w+)="([A-Za-z]\w*)"/g)) if (typeof pageDef[m[1]] !== 'function') failures.push(`${page}: 缺少事件方法${m[1]}`);
-    for (const m of wxml.matchAll(/<(\/?)([a-zA-Z-]+)\b/g)) if (!['view','text','button','block','picker','input','textarea','checkbox','checkbox-group','label'].includes(m[2])) failures.push(`${page}: 非白名单原生组件${m[2]}`);
+    for (const m of wxml.matchAll(/<(\/?)([a-zA-Z-]+)\b/g)) if (!['view','text','button','block','picker','input','textarea','checkbox','checkbox-group','label','image','swiper','swiper-item'].includes(m[2])) failures.push(`${page}: 非白名单原生组件${m[2]}`);
   } catch(e) { failures.push(`${page}: ${e.message}`); }
 }
 for (const f of ['app.js','config.js','utils/api.js']) checkJS(path.join(root,f));

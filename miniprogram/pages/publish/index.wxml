@@ -1,6 +1,6 @@
 <view class="page">
 <view class="title">发布供需</view>
-<view class="notice">提交后由运营审核。请勿在公开描述中填写身份证、详细地址或他人联系方式。</view>
+<view class="notice">提交时自动调用微信文本安全检查，通过后立即公开。请勿填写身份证、详细地址或他人联系方式。</view>
 <view class="card">
 <text class="label">信息类型</text>
 <picker class="picker" range="{{kinds}}" value="{{kindIndex}}" data-name="kind" bindchange="change">{{kinds[kindIndex]}}</picker>
@@ -22,5 +22,5 @@
 <view wx:if="{{reportId}}" class="muted space">已关联你的估价报告，报告详情仍仅本人可见。</view>
 </view>
 <view wx:if="{{error}}" class="error">{{error}}</view>
-<button class="primary full" loading="{{busy}}" disabled="{{busy}}" bindtap="submit">提交审核</button>
+<button class="primary full" loading="{{busy}}" disabled="{{busy}}" bindtap="submit">安全检查并发布</button>
 </view>

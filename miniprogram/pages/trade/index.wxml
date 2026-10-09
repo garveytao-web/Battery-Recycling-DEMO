@@ -23,8 +23,7 @@
 </view>
 <view class="space">{{trade.description || '暂无补充说明'}}</view>
 </view>
-<view wx:if="{{trade.status === 'pending'}}" class="notice">信息已保存，等待运营审核后公开。</view>
- <view wx:if="{{!trade.isMine && trade.status === 'approved'}}" class="card">
+ <view wx:if="{{!trade.isMine && trade.status === 'active'}}" class="card">
 <view class="title">提交意向报价</view>
 <text class="label">价格（{{trade.unitLabel}}）</text>
 <input class="input" type="digit" value="{{price}}" data-name="price" bindinput="input" placeholder="输入报价"/>

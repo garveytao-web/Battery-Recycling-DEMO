@@ -1,0 +1,30 @@
+{
+  "version": "power-regeneration-v1-2026-10-08",
+  "source": "用户提供的动力再生数据（2026-10-07整理）",
+  "sourceRows": 27,
+  "method": "同一化学体系与单体外形下，200/400/800kg样本严格线性；以价格除以重量得到元/kg基准。",
+  "weightRates": [
+    { "id": "pr-lfp-prismatic", "chemistry": "lfp", "form": "prismatic", "price": 12.691, "sampleCount": 3 },
+    { "id": "pr-lfp-cylindrical", "chemistry": "lfp", "form": "cylindrical", "price": 7.3815, "sampleCount": 3 },
+    { "id": "pr-lfp-pouch", "chemistry": "lfp", "form": "pouch", "price": 11.544, "sampleCount": 3 },
+    { "id": "pr-ncm-prismatic", "chemistry": "ncm", "form": "prismatic", "price": 34.1569, "sampleCount": 3 },
+    { "id": "pr-ncm-cylindrical", "chemistry": "ncm", "form": "cylindrical", "price": 22.496, "sampleCount": 3 },
+    { "id": "pr-ncm-pouch", "chemistry": "ncm", "form": "pouch", "price": 35.224, "sampleCount": 3 },
+    { "id": "pr-small-ncm-prismatic", "chemistry": "small_ncm", "form": "prismatic", "price": 21.0308, "sampleCount": 3 },
+    { "id": "pr-small-ncm-cylindrical", "chemistry": "small_ncm", "form": "cylindrical", "price": 12.654, "sampleCount": 3 },
+    { "id": "pr-small-ncm-pouch", "chemistry": "small_ncm", "form": "pouch", "price": 22.348, "sampleCount": 3 }
+  ],
+  "massPerKwh": [
+    { "chemistry": "lfp", "form": "prismatic", "median": 7.2606, "p10": 6.8269, "p90": 7.9341, "sampleCount": 501 },
+    { "chemistry": "ncm", "form": "prismatic", "median": 5.9431, "p10": 5.3791, "p90": 7.1221, "sampleCount": 157 },
+    { "chemistry": "ncm", "form": "cylindrical", "median": 5.6, "p10": 5.6, "p90": 5.7143, "sampleCount": 8 },
+    { "chemistry": "ncm", "form": "pouch", "median": 7.5269, "p10": 7.5269, "p90": 7.5269, "sampleCount": 1 }
+  ],
+  "priceRangePercent": 0.08,
+  "consistencyThreshold": null,
+  "notes": [
+    "重量结果是主估值。上下限暂按中心值±8%展示，属于演示假设，不是统计置信区间。",
+    "容量校验先用车型库的质量/电量中位数换算等效重量，再沿用同一元/kg基准，避免两套价格体系互相矛盾。",
+    "一致性阈值尚未完成业务标定；当前只展示差异，不自动改价。"
+  ]
+}

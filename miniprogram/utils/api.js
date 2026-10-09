@@ -32,6 +32,7 @@ async function ensureLogin() { if (!loginTask) loginTask = login().finally(() =>
 async function api(path, method = 'GET', data) { await ensureLogin(); return request(path, method, data); }
 const date = iso => (iso || '').replace('T', ' ').slice(0, 16) + ' UTC';
 const prices = { 'CNY/batch': '元/批', 'CNY/kg': '元/kg', 'CNY/kWh': '元/kWh' };
-const chemistryNames = { lfp: '磷酸铁锂', ncm: '三元', small_ncm: '小三元' };
-const statusNames = { pending: '待审核', approved: '已公开', rejected: '未通过', withdrawn: '已撤下' };
-module.exports = { api, request, ensureLogin, clearSession, hasSession, date, prices, chemistryNames, statusNames };
+const chemistryNames = { lfp: '磷酸铁锂', ncm: '三元锂', small_ncm: '小三元' };
+const formNames = { prismatic: '方形', pouch: '软包', cylindrical: '圆柱形' };
+const statusNames = { active: '已公开', withdrawn: '已撤下' };
+module.exports = { api, request, ensureLogin, clearSession, hasSession, date, prices, chemistryNames, formNames, statusNames };

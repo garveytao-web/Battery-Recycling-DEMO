@@ -1,42 +1,32 @@
-<view class="page">
-  <view class="hero">
-<view class="eyebrow">XUNDIAN · 循电</view>
-<view class="hero-title">
-<view>退役电池的下一站，</view>
-<view>从一份透明估价开始。</view>
-</view>
-<view class="hero-desc">材料回收行情参考 · 保存报告 · 对接供需</view>
-<button class="primary full space" bindtap="estimate">开始估价</button>
-</view>
-  <view class="grid">
-<button class="ghost" bindtap="history">我的报告</button>
-<button class="ghost" bindtap="market">查看供需</button>
-</view>
-  <view class="card space">
-<view class="title">有多少信息，就算到哪一步</view>
-<view class="bullet">01　知道电池类型与电量，可查看参考范围。</view>
-<view class="bullet">02　补充品牌和单体Ah，可缩小来源规格范围。</view>
-<view class="bullet">03　报告保留来源、日期与输入，不编造缺失参数。</view>
-</view>
-  <view wx:if="{{loading}}" class="empty">正在连接行情服务…</view>
-  <view wx:if="{{error}}" class="error">{{error}}<button class="ghost space" bindtap="load">重新连接</button>
-</view>
-  <view wx:if="{{catalog}}" class="card">
-<view class="title">当前数据覆盖</view>
-<view class="row item">
-<text>当前截图可用参考规格</text>
-<text class="value">{{quoteCount}} 条</text>
-</view>
-<view class="row item">
-<text>已核实重量基准</text>
-<text class="value">{{catalog.weightRateCount}} 条</text>
-</view>
-<view class="row item">
-<text>已核实车辆配置</text>
-<text class="value">{{catalog.vehicleCount}} 条</text>
-</view>
-<view class="notice">当前为来源行情参考。重量基准、车型映射和最终交易条件需要逐项核实。</view>
-<view class="muted mono">数据版本 {{catalog.version}}</view>
-</view>
+<view class="page home-page">
+  <view class="brand-lockup"><image src="/assets/logo-mark.png" mode="aspectFit"/><view><view class="brand-name">循电</view><view class="eyebrow">XUNDIAN</view></view></view>
+  <swiper class="banner-swiper" indicator-dots="true" indicator-color="#ffffff77" indicator-active-color="#ffffff" autoplay="true" interval="4200" circular="true">
+    <swiper-item wx:for="{{banners}}" wx:key="image"><view class="banner-slide" bindtap="estimate"><image class="banner-image" src="{{item.image}}" mode="aspectFill"/><view class="banner-copy"><view class="banner-eyebrow">{{item.eyebrow}}</view><view class="banner-title">{{item.title}}</view><view class="banner-subtitle">{{item.subtitle}}</view><view class="banner-cta">开始估价 →</view></view></view></swiper-item>
+  </swiper>
+  <view class="card quick-card">
+    <view class="eyebrow">QUICK START</view><view class="title">动力电池回收参考估价</view>
+    <view class="muted">公告车型检索，或按铭牌重量与总电量估价。</view>
+    <button class="primary full space" bindtap="estimate">开始估价</button>
+  </view>
+  <view class="tile-grid">
+    <view class="tile" bindtap="history"><view class="tile-glyph">◎</view><view class="subtitle">我的报告</view><view class="small muted">查看已保存的估价快照</view></view>
+    <view class="tile warm" bindtap="market"><view class="tile-glyph">↔</view><view class="subtitle">供需大厅</view><view class="small muted">发布与接收私密意向</view></view>
+  </view>
+  <view class="card">
+    <view class="title">两条估价路径</view>
+    <view class="step-row"><text class="step-number">01</text><view><view class="subtitle">公告车型</view><view class="muted small">搜索公告型号，选择候选电池配置。</view></view></view>
+    <view class="step-row"><text class="step-number">02</text><view><view class="subtitle">铭牌参数</view><view class="muted small">冷门或停产车型，填写化学体系、外形、总重量和总电量。</view></view></view>
+  </view>
+  <view wx:if="{{loading}}" class="empty">正在连接数据服务…</view>
+  <view wx:if="{{error}}" class="error">{{error}}<button class="ghost space" bindtap="load">重新连接</button></view>
+  <view wx:if="{{catalog}}" class="card coverage-card">
+    <view class="title">当前数据覆盖</view>
+    <view class="row item"><text>可检索公告车型</text><text class="value">{{catalog.vehicleCount}} 个</text></view>
+    <view class="row item"><text>候选电池配置</text><text class="value">{{catalog.vehicleConfigurationCount}} 条</text></view>
+    <view class="row item"><text>可直接估价配置</text><text class="value">{{catalog.priceReadyConfigurationCount}} 条</text></view>
+    <view class="row item"><text>重量分类基准</text><text class="value">{{catalog.weightRateCount}} 组</text></view>
+    <view class="notice">未公开的电池包型号会明确显示“未公开”，不补造缺失字段。</view>
+    <view class="muted mono small">数据版本 {{catalog.version}}</view>
+  </view>
   <view class="bottom-note" bindtap="privacy">隐私说明与数据用途</view>
 </view>

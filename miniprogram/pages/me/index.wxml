@@ -26,5 +26,5 @@
 <button class="ghost" bindtap="logout">退出登录</button>
 <button class="danger" bindtap="removeAccount">删除账户</button>
 </view>
-<view class="bottom-note">循电 · v0.3.0 · 材料回收参考与供需对接</view>
+<view class="bottom-note">循电 · v0.4.0 · 动力电池回收参考与供需对接</view>
 </view>

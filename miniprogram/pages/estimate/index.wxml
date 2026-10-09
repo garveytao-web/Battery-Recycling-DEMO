@@ -1,56 +1,44 @@
 <view class="page">
- <view class="title">电池估价</view>
-<view class="muted">可直接填写电池参数，无需先选择汽车品牌和车型。</view>
- <view class="card space">
-<view class="subtitle">电池参数</view>
-  <text class="label">材料体系</text>
-<picker class="picker" range="{{chemistryLabels}}" value="{{chemistryIndex}}" data-name="chemistry" bindchange="change">{{chemistryLabels[chemistryIndex]}}</picker>
-  <view wx:if="{{chemistryIndex === 2}}" class="notice">“小三元”的来源定义及独立价格尚待核实，当前会保存待补数据报告。</view>
-  <text class="label">货物形态</text>
-<picker class="picker" range="{{goodsLabels}}" value="{{goodsIndex}}" data-name="goods" bindchange="change">{{goodsLabels[goodsIndex]}}</picker>
-  <text class="label">电芯封装</text>
-<picker class="picker" range="{{formLabels}}" value="{{formIndex}}" data-name="form" bindchange="change">{{formLabels[formIndex]}}</picker>
-  <text class="label">估价依据</text>
-<picker class="picker" range="{{basisLabels}}" value="{{basisIndex}}" data-name="basis" bindchange="change">{{basisLabels[basisIndex]}}</picker>
-  <text class="label">{{basisIndex === 0 ? '该批电池额定总电量（kWh）' : '该批电池实际总重量（kg）'}} *</text>
-<input class="input" type="digit" value="{{quantity}}" disabled="{{selectedVehicle !== null}}" data-name="quantity" bindinput="input" placeholder="{{basisIndex === 0 ? '例如 60；1度电=1kWh' : '例如 400；不含车辆及外部包装'}}"/>
-  <view wx:if="{{basisIndex === 0}}" class="muted space">填写额定电量，不填仪表剩余电量；不要把Ah直接当作kWh。</view>
-  <text class="label">电池状态</text>
-<picker class="picker" range="{{conditionLabels}}" value="{{conditionIndex}}" data-name="condition" bindchange="change">{{conditionLabels[conditionIndex]}}</picker>
- </view>
- <view wx:if="{{basisIndex === 0}}" class="card">
-<view class="subtitle">缩小参考范围（选填）</view>
-<text class="label">电芯品牌</text>
-<picker class="picker" range="{{brands}}" value="{{brandIndex}}" data-name="brand" bindchange="change">{{brands[brandIndex]}}</picker>
-<text class="label">单体标称容量 Ah</text>
-<picker class="picker" range="{{ahLabels}}" value="{{ahIndex}}" data-name="ah" bindchange="change">{{ahLabels[ahIndex]}}</picker>
-<view class="muted space">品牌+Ah是来源规格描述，不能据此认定唯一电池型号。</view>
-</view>
- <view class="card">
-<view class="subtitle">补充信息（选填）</view>
-<text class="label">所在城市</text>
-<input class="input" value="{{region}}" data-name="region" bindinput="input" maxlength="40" placeholder="例如 济南；用于供需对接"/>
-<text class="label">车辆或电池备注</text>
-<input class="input" value="{{vehicleDescription}}" data-name="vehicleDescription" bindinput="input" maxlength="100" placeholder="例如 年款、版本、铭牌型号"/>
-<view class="muted space">城市不参与行情折价；未取得检测证据时，不按里程推算金属折损。</view>
-</view>
- <view class="card">
-<view class="subtitle">从已核实车辆配置填写（可选）</view>
-<view class="row space">
-<input class="input grow" value="{{vehicleQuery}}" data-name="vehicleQuery" bindinput="input" placeholder="年款 / 车型 / 配置"/>
-<button class="secondary" bindtap="searchVehicle">查询</button>
-</view>
-<view class="item" wx:for="{{vehicles}}" wx:key="id" data-id="{{item.id}}" bindtap="selectVehicle">{{item.label}}</view>
-<view wx:if="{{selectedVehicle}}">
-<view class="notice">{{selectedVehicle.label}}</view>
-<checkbox-group bindchange="confirmOriginal">
-<label class="check">
-<checkbox value="yes" checked="{{originalBatteryConfirmed}}" color="#146a50"/>确认当前仍为该配置原装电池</label>
-</checkbox-group>
-<button class="ghost" bindtap="clearVehicle">改为手动填写</button>
-</view>
-</view>
- <view wx:if="{{error}}" class="error">{{error}}</view>
-<button class="primary full" loading="{{busy}}" disabled="{{busy}}" bindtap="submit">生成并保存报告</button>
-<view class="bottom-note">有来源的行情测算 · 缺失数据会明确标注</view>
+  <view class="page-heading">
+    <view class="eyebrow">BATTERY VALUATION</view><view class="title">电池回收估价</view>
+    <view class="muted">重量是主估值，电量用于交叉校验。</view>
+  </view>
+  <view class="mode-switch">
+    <view class="mode-button {{mode === 'vehicle' ? 'active' : ''}}" data-mode="vehicle" bindtap="switchMode">公告车型估价</view>
+    <view class="mode-button {{mode === 'manual' ? 'active' : ''}}" data-mode="manual" bindtap="switchMode">铭牌参数估价</view>
+  </view>
+  <view wx:if="{{mode === 'vehicle'}}" class="card">
+    <view class="subtitle">输入公告车型</view><view class="muted small">支持公告型号、常见车型名或生产企业关键词检索。</view>
+    <view class="search-row space"><input class="input" value="{{vehicleQuery}}" data-name="vehicleQuery" bindinput="input" confirm-type="search" bindconfirm="searchVehicle" placeholder="例如 BJ7000MBEVR2"/><button class="secondary search-button" loading="{{searching}}" bindtap="searchVehicle">检索</button></view>
+    <view wx:if="{{selectedConfig}}" class="selected-config">
+      <view class="row"><text class="tag">已选择</text><text class="link" bindtap="clearConfig">重新选择</text></view>
+      <view class="subtitle space">{{selectedConfig.publicModel}}</view><view>{{selectedConfig.candidateLabel}}</view>
+      <view class="muted small">电池包型号：{{selectedConfig.exactPackModel || '公开资料未披露'}}</view>
+      <view class="muted small">材料置信度 {{selectedConfig.chemistryConfidence}} · 外形置信度 {{selectedConfig.formConfidence}}</view>
+    </view>
+    <block wx:for="{{vehicleResults}}" wx:key="publicModel" wx:for-item="model">
+      <view class="vehicle-result"><view class="subtitle">{{model.publicModel}}</view><view class="muted small">{{model.commonName || '车型名称未补充'}} · {{model.vehicleMaker}}</view>
+        <view wx:for="{{model.configurations}}" wx:key="id" wx:for-item="config" class="config-option {{selectedConfig.id === config.id ? 'active' : ''}}" data-id="{{config.id}}" bindtap="selectConfig">
+          <view class="row"><text>{{config.candidateLabel}}</text><text>{{config.priceReady ? '选择' : '需铭牌'}}</text></view><view class="muted small">包型号：{{config.exactPackModel || '未公开'}} · {{config.id}}</view>
+        </view>
+      </view>
+    </block>
+  </view>
+  <view wx:if="{{mode === 'manual'}}" class="card">
+    <view class="subtitle">铭牌参数</view>
+    <text class="label">生产企业（选填）</text><input class="input" value="{{producer}}" data-name="producer" bindinput="input" maxlength="80" placeholder="电池生产企业"/>
+    <text class="label">电池化学体系</text><picker class="picker" range="{{chemistryLabels}}" value="{{chemistryIndex}}" data-name="chemistry" bindchange="change">{{chemistryLabels[chemistryIndex]}}</picker>
+    <text class="label">单体外形 / 封装方式</text><picker class="picker" range="{{formLabels}}" value="{{formIndex}}" data-name="form" bindchange="change">{{formLabels[formIndex]}}</picker>
+    <text class="label">电池包总重量（kg）</text><input class="input" type="digit" value="{{massKg}}" data-name="massKg" bindinput="input" placeholder="例如 420"/>
+    <text class="label">电池包总电量（kWh）</text><input class="input" type="digit" value="{{energyKwh}}" data-name="energyKwh" bindinput="input" placeholder="例如 60.5"/>
+    <view class="form-hint">这里的“容量”是整包总电量 kWh，不是单体 Ah。</view>
+  </view>
+  <view class="card">
+    <view class="subtitle">车辆信息</view>
+    <text class="label">车辆所在城市</text><input class="input" value="{{region}}" data-name="region" bindinput="input" maxlength="40" placeholder="例如 武汉"/>
+    <text class="label">行驶里程（km）</text><input class="input" type="number" value="{{mileageKm}}" data-name="mileageKm" bindinput="input" placeholder="例如 50000"/>
+    <view class="form-hint">城市和里程会写入报告，但不参与价格计算。</view>
+  </view>
+  <view wx:if="{{error}}" class="error">{{error}}</view>
+  <button class="primary full" loading="{{busy}}" disabled="{{busy || (mode === 'vehicle' && !selectedConfig)}}" bindtap="submit">生成估价报告</button>
 </view>

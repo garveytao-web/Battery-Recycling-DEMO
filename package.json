@@ -1,6 +1,6 @@
 {
   "name": "xundian-wechat",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "循电微信小程序与估价服务",
   "engines": { "node": ">=24.0.0" },

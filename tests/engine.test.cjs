@@ -2,17 +2,77 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { estimate } = require('../server/engine.cjs');
+const { loadCatalog } = require('../server/index.cjs');
 const { parseCSV, validateRecords } = require('../server/catalog-import.cjs');
-const catalog = require('../server/data/catalog.json');
-const now = new Date('2026-09-30T08:00:00Z');
-const base = { chemistry:'lfp', goods:'pack', form:'unspecified', condition:'normal', basis:'energy', quantity:60 };
-test('200条档案、50条当前截图，异常力神记录隔离', () => { assert.equal(catalog.quotes.length,200); assert.equal(catalog.quotes.filter(r=>r.current).length,50); assert.equal(catalog.quotes.filter(r=>r.current&&r.reviewStatus==='needs_review').length,1); assert.equal(catalog.vehicles.length,0); });
-test('精确来源规格乘额定kWh，结果可追溯', () => { const row = catalog.quotes.find(r=>r.current&&r.reviewStatus==='usable_reference'&&r.chemistry==='lfp'); const r = estimate({...base,brand:row.brand,capacityAh:row.capacityAh},catalog,now); assert.equal(r.result.center,Math.round(row.price*60*100)/100); assert.equal(r.references[0].price,row.price); assert.equal(r.status,'reference'); assert.equal(r.result.count,1); });
-test('电量线性缩放，里程和地区不产生虚假折扣', () => { const a = estimate(base,catalog,now); const b = estimate({...base,quantity:120,mileage:200000,region:'济南'},catalog,now); assert.equal(b.result.low,a.result.low*2); assert.equal(b.result.high,a.result.high*2); });
-test('缺乏重量、小三元和不存在规格时不套价', () => { for(const input of [{...base,basis:'weight'},{...base,chemistry:'small_ncm'},{...base,brand:'不存在品牌'},{...base,capacityAh:9999}]) assert.equal(estimate(input,catalog,now).result,null); });
-test('异常状态必须核验', () => { for(const condition of ['flooded','burned','damaged','missing','unknown']) assert.equal(estimate({...base,condition},catalog,now).statusLabel,'需人工核验'); });
-test('拒绝缺失、非数字、负值和非法枚举', () => { for(const quantity of [0,-1,'',null,true,'NaN',Infinity]) assert.throws(()=>estimate({...base,quantity},catalog,now)); assert.throws(()=>estimate({...base,goods:'car'},catalog,now)); });
-test('历史行情显示过期，不伪装当日价格', () => { assert.equal(estimate(base,catalog,new Date('2026-11-01')).status,'stale_reference'); });
-test('重量基准须同时满足交付形态、封装、日期、质量范围', () => { const c=structuredClone(catalog); c.weightRates=[{id:'w1',chemistry:'lfp',form:'prismatic',goods:'pack',price:10,unit:'CNY/kg',minWeightKg:200,maxWeightKg:400,validFrom:'2026-09-30',validUntil:'2026-10-01',verified:true,source:'test'}]; const input={...base,basis:'weight',form:'prismatic',quantity:300}; assert.equal(estimate(input,c,now).result.center,3000); for(const override of [{quantity:401},{goods:'cell'},{form:'pouch'}]) assert.equal(estimate({...input,...override},c,now).result,null); assert.equal(estimate(input,c,new Date('2026-10-02')).result,null); });
-test('车辆配置必须核实并确认原装，使用快照而非用户篡改数值', () => { const c=structuredClone(catalog); c.vehicles=[{id:'test-config',label:'测试配置',chemistry:'lfp',energyKwh:70,massKg:null,verified:true}]; assert.throws(()=>estimate({...base,vehicleId:'test-config'},c,now)); const r=estimate({...base,vehicleId:'test-config',originalBatteryConfirmed:true,quantity:100},c,now); assert.equal(r.input.quantity,70); assert.throws(()=>estimate({...base,basis:'weight',vehicleId:'test-config',originalBatteryConfirmed:true},c,now)); });
-test('CSV支持中文、BOM、逗号与换行；禁止模板空导入、假日期和错误单位',()=> { assert.deepEqual(parseCSV('\uFEFFid,note\r\na,"甲,乙\n丙"\r\n'),[{id:'a',note:'甲,乙\n丙'}]); assert.throws(()=>validateRecords('vehicles',[])); const r={id:'a',chemistry:'lfp',source:'PDF1',form:'prismatic',goods:'pack',price:'10',unit:'CNY/kg',minWeightKg:'200',maxWeightKg:'200',validFrom:'2026-09-30',validUntil:'2026-09-30'}; assert.equal(validateRecords('weightRates',[r])[0].price,10); assert.throws(()=>validateRecords('weightRates',[{...r,unit:'CNY/t'}])); assert.throws(()=>validateRecords('weightRates',[{...r,validFrom:'2026-02-30'}])); });
+
+const catalog = loadCatalog();
+const now = new Date('2026-10-08T08:00:00Z');
+const manual = { mode: 'manual', chemistry: 'lfp', form: 'prismatic', massKg: 400, energyKwh: 55, mileageKm: 50000, region: '武汉' };
+
+test('车型与价格数据覆盖达到当前冻结版本', () => {
+  assert.equal(catalog.vehicleMap.searchableModelCount, 651);
+  assert.equal(catalog.vehicleMap.searchableConfigurationCount, 683);
+  assert.equal(catalog.vehicleMap.priceReadyConfigurationCount, 667);
+  assert.equal(catalog.pricing.weightRates.length, 9);
+});
+test('重量主算法复现动力再生线性样本', () => {
+  const report = estimate(manual, catalog, now);
+  assert.equal(report.weightEstimate.rate, 12.691);
+  assert.equal(report.weightEstimate.center, 5076.4);
+  assert.equal(report.result.center, 5076.4);
+  assert.equal(report.result.primaryMethod, '电池包总重量 × 动力再生分类基准价');
+});
+
+test('地区与里程只进入快照，不改变价格', () => {
+  const a = estimate(manual, catalog, now);
+  const b = estimate({ ...manual, region: '上海', mileageKm: 180000 }, catalog, now);
+  assert.deepEqual(b.result, a.result);
+  assert.equal(b.input.region, '上海');
+  assert.equal(b.input.mileageKm, 180000);
+});
+
+test('容量沿用重量价格体系交叉校验，不覆盖重量主估值', () => {
+  const report = estimate(manual, catalog, now);
+  assert.equal(report.energyCheck.available, true);
+  assert.equal(report.energyCheck.massPerKwh, 7.2606);
+  assert.ok(report.energyCheck.differencePercent >= 0);
+  assert.match(report.energyCheck.conclusion, /不自动修改/);
+});
+
+test('车辆候选配置由服务端快照覆盖客户端伪造字段', () => {
+  const vehicle = catalog.vehicles.find(row => row.priceReady && row.energyKwh);
+  const report = estimate({ mode: 'vehicle', vehicleConfigId: vehicle.id, chemistry: 'lfp', form: 'pouch', massKg: 1, energyKwh: 1, mileageKm: 0, region: '北京' }, catalog, now);
+  assert.equal(report.input.massKg, vehicle.massKg);
+  assert.equal(report.input.energyKwh, vehicle.energyKwh);
+  assert.equal(report.input.chemistry, vehicle.chemistry);
+  assert.equal(report.vehicle.id, vehicle.id);
+});
+
+test('歧义车型配置保留但不能静默进入估价', () => {
+  const ambiguous = catalog.vehicles.find(row => !row.priceReady);
+  assert.ok(ambiguous);
+  assert.throws(() => estimate({ mode: 'vehicle', vehicleConfigId: ambiguous.id, mileageKm: 0, region: '武汉' }, catalog, now), /铭牌参数/);
+});
+
+test('拒绝缺失、负数与非法枚举，已删除的旧表单字段不起作用', () => {
+  assert.throws(() => estimate({ ...manual, massKg: 0 }, catalog, now));
+  assert.throws(() => estimate({ ...manual, energyKwh: '' }, catalog, now));
+  assert.throws(() => estimate({ ...manual, mileageKm: -1 }, catalog, now));
+  assert.throws(() => estimate({ ...manual, chemistry: 'lead' }, catalog, now));
+  const report = estimate({ ...manual, condition: 'burned', capacityAh: 280, goods: 'cell' }, catalog, now);
+  assert.equal(report.result.center, 5076.4);
+});
+
+test('报告附静态材料行情但不计算理论金属贡献', () => {
+  const report = estimate(manual, catalog, now);
+  assert.ok(report.materialReferences.length >= 2);
+  assert.equal(Object.hasOwn(report.result, 'metalContribution'), false);
+  assert.match(report.scope, /不构成最终收购承诺/);
+});
+
+test('CSV导入工具继续支持中文、BOM、换行与严格单位', () => {
+  assert.deepEqual(parseCSV('\uFEFFid,note\r\na,"甲,乙\n丙"\r\n'), [{ id: 'a', note: '甲,乙\n丙' }]);
+  const row = { id: 'a', chemistry: 'lfp', source: 'PDF1', form: 'prismatic', goods: 'pack', price: '10', unit: 'CNY/kg', minWeightKg: '200', maxWeightKg: '200', validFrom: '2026-09-30', validUntil: '2026-09-30' };
+  assert.equal(validateRecords('weightRates', [row])[0].price, 10);
+  assert.throws(() => validateRecords('weightRates', [{ ...row, unit: 'CNY/t' }]));
+});

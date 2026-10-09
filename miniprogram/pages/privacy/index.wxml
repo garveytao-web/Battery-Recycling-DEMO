@@ -17,7 +17,7 @@
 <view class="card">
 <view class="subtitle">谁可以看到</view>
 <view class="bullet">报告仅本人可见，关联供需信息不公开报告详情。</view>
-<view class="bullet">供需信息经运营审核后公开；请避免在描述里填写私人联系方式。</view>
+<view class="bullet">供需文本通过微信内容安全检查后立即公开；当前版本不设置人工审核后台。</view>
 <view class="bullet">意向报价及联系方式只向报价本人和供需发布者提供。提交前单独征求你的同意。</view>
 </view>
 <view class="card">

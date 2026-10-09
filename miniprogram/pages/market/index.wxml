@@ -7,7 +7,7 @@
 <view class="pill {{!mine ? 'active' : ''}}" data-mine="false" bindtap="tab">公开信息</view>
 <view class="pill {{mine ? 'active' : ''}}" data-mine="true" bindtap="tab">我的发布</view>
 </view>
-<view class="notice">供需信息审核后公开。意向报价用于后续沟通，不产生订单、竞拍或付款。</view>
+<view class="notice">发布文本通过微信安全检查后立即公开。页面仅在进入或下拉时刷新，不自动轮询。</view>
 <view wx:if="{{error}}" class="error">{{error}}<button class="ghost space" bindtap="load">重试</button>
 </view>
 <view wx:for="{{items}}" wx:key="id" class="card" data-id="{{item.id}}" bindtap="open">
@@ -22,6 +22,6 @@
 </view>
 <view class="muted">意向报价单位：{{item.unitLabel}}</view>
 </view>
-<view wx:if="{{!items.length && !loading && !error}}" class="empty">{{mine ? '你还没有发布供需信息' : '暂无已审核的供需信息'}}</view>
+<view wx:if="{{!items.length && !loading && !error}}" class="empty">{{mine ? '你还没有发布供需信息' : '暂无公开的供需信息'}}</view>
 <view wx:if="{{loading}}" class="empty">正在读取…</view>
 </view>

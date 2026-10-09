@@ -1,12 +1,12 @@
 # 循电 · Battery Recycling DEMO
 
-## 微信小程序 v0.3.0（新入口）
+## 微信小程序 v0.4.0（当前入口）
 
 本仓库已新增原生微信小程序及Node24/SQLite服务端。请先阅读 [微信交付与运行说明](docs/WECHAT_DELIVERY.md)，以及 [数据采集任务](docs/DATA_COLLECTION.md)、[Codex继续执行说明](docs/CODEX_HANDOFF.md)。
 
 本地：复制 `.env.example` 为 `.env`，运行 `npm start`，微信开发者工具导入仓库根目录。开发登录仅供本机联调。运行 `npm test` 和 `npm run check:mini` 验证代码。生产环境需真实AppID、HTTPS域名、服务端密钥和真机验收；当前未部署或提审。
 
-新小程序已接入用户提供的价格归档，缺失的重量基准、车型映射及报价口径会明确标注。**下方旧H5说明仅适用于dist目录；其中Mock数据与公式不用于新小程序。**
+当前小程序接入 651 个公告车型、683 条候选电池配置和动力再生 9 组重量分类基准。重量是主估值，整包总电量只做同一价格体系下的交叉校验；地区和里程仅进入报告，不参与计价。**下方旧H5说明仅适用于 `dist/`；其中Mock数据与公式不用于新小程序。**
 
 ## 原H5演示说明
 
@@ -61,4 +61,4 @@ node check.cjs
 
 目标 GitHub 仓库：<https://github.com/garveytao-web/Battery-Recycling-DEMO>
 
-本轮只创建本地提交，不自动部署或推送远端。
+本地修改不会自动部署、提审或推送远端；这些操作只在用户明确授权后执行。

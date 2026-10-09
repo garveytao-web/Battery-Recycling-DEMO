@@ -4,6 +4,10 @@
   "compileType": "miniprogram",
   "appid": "touristappid",
   "projectname": "循电",
-  "setting": { "es6": true, "minified": true, "urlCheck": true },
+  "setting": {
+    "es6": true,
+    "minified": true,
+    "urlCheck": false
+  },
   "condition": {}
 }

@@ -4,7 +4,8 @@ const path = require('node:path');
 const root = path.resolve(__dirname,'..');
 const mini = require('../miniprogram/config');
 const project = require('../project.config.json');
-const c = require('../server/data/catalog.json');
+const { loadCatalog } = require('../server/index.cjs');
+const c = loadCatalog();
 const failures = [];
 if (!/^wx[a-f0-9]{16}$/i.test(project.appid)) failures.push('尚未设置真实小程序AppID');
 if (!mini.apiBase.startsWith('https://') || /localhost|127\.0\.0\.1/.test(mini.apiBase)) failures.push('尚未设置可访问的HTTPS API域名');
@@ -17,7 +18,7 @@ const required = ['devtoolsCompile','realDeviceLogin','realDeviceReport','twoAcc
 let acceptance = {};
 if (fs.existsSync(acknowledgment)) acceptance = JSON.parse(fs.readFileSync(acknowledgment,'utf8'));
 for (const k of required) if (acceptance[k] !== true) failures.push('未确认验收项：'+k);
-console.log(`数据覆盖：${c.quotes.filter(r=>r.current).length}条截图报价，${c.weightRates.length}条重量基准，${c.vehicles.length}条车辆配置。`);
-console.log('零条重量基准/车型时对应功能将明确显示待补数据；正式成交报价不在本版范围内。');
+console.log(`数据覆盖：${c.vehicleMap.searchableModelCount}个公告车型，${c.vehicleMap.searchableConfigurationCount}条候选配置，${c.pricing.weightRates.length}组重量基准。`);
+console.log('地区和里程不参与计价；正式成交报价、检测和异常处置不在本版范围内。');
 if (failures.length) { console.error('禁止宣称已完成生产交付：\n- '+failures.join('\n- ')); process.exitCode=1; }
 else console.log('自动配置检查与人工验收记录齐全。仍须通过微信平台审核才能公开发布。');
