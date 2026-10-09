@@ -4,7 +4,7 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
-const { estimate, metalContentEstimates, InputError, text, positive, chemistries, forms } = require('./engine.cjs');
+const { estimate, InputError, text, positive, chemistries, forms } = require('./engine.cjs');
 const root = path.resolve(__dirname, '..');
 const hash = value => crypto.createHash('sha256').update(value).digest('hex');
 const id = prefix => `${prefix}-${crypto.randomUUID()}`;
@@ -132,6 +132,20 @@ function createApp(options = {}) {
       candidateLabel: report.vehicle.candidateLabel,
       exactPackModel: report.vehicle.exactPackModel
     } : null;
+    const allowedMarkets = {
+      lfp: ['磷酸铁锂电池粉', '废旧磷酸铁锂正极片', '磷酸铁锂极片粉'],
+      ncm: ['废旧三元正极片', '三元极片粉', '三元电池粉'],
+      small_ncm: ['小三元18650', '小三元铝壳', '小三元聚合物／软包']
+    }[report.input.chemistry] || [];
+    const marketRows = report.marketReferences || report.materialReferences || [];
+    const marketReferences = allowedMarkets.map(name => marketRows.find(row => row.name === name)).filter(Boolean).map(row => ({
+      name: row.name,
+      grade: row.grade,
+      low: row.low,
+      high: row.high,
+      unit: row.unit === 'CNY/t' ? '元/吨' : row.unit,
+      snapshotDate: row.snapshotDate
+    }));
     return {
       id: report.id,
       createdAt: report.createdAt,
@@ -141,7 +155,7 @@ function createApp(options = {}) {
       input: report.input,
       vehicle,
       result: publicResult,
-      metalContentEstimates: report.metalContentEstimates || metalContentEstimates(report.input.chemistry, report.input.massKg, getCatalog()),
+      marketReferences,
       scope: report.scope
     };
   }

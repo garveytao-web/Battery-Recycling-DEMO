@@ -6,7 +6,7 @@ const formKeys = ['prismatic', 'pouch', 'cylindrical'];
 Page({
   data: {
     mode: 'vehicle', vehicleQuery: '', vehicleResults: [], selectedConfig: null, searching: false,
-    producer: '', chemistryIndex: 0, chemistryLabels: ['磷酸铁锂', '三元锂', '小三元（来源分类）'],
+    producer: '', chemistryIndex: 0, chemistryLabels: ['磷酸铁锂', '三元锂', '小三元'],
     formIndex: 0, formLabels: ['方形', '软包', '圆柱形'], massKg: '', energyKwh: '',
     mileageKm: '', region: '', error: '', busy: false
   },

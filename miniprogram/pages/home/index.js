@@ -3,7 +3,7 @@ Page({
     banners: [
       { image: '/assets/banner-1.png', eyebrow: 'SMART VALUATION', title: '智能估价', subtitle: '从公告车型或铭牌参数开始' },
       { image: '/assets/banner-2.png', eyebrow: 'CLEAR RESULT', title: '估价更清晰', subtitle: '核心参数集中呈现' },
-      { image: '/assets/banner-3.png', eyebrow: 'COMPLIANT RECYCLING', title: '规范回收', subtitle: '信息清晰 · 沟通高效' },
+      { image: '/assets/banner-3.png', tone: 'deep', eyebrow: 'COMPLIANT RECYCLING', title: '规范回收', subtitle: '信息清晰 · 沟通高效' },
       { image: '/assets/banner-4.png', eyebrow: 'CIRCULAR VALUE', title: '让材料回到循环', subtitle: '聚焦合规处置与资源再生' },
       { image: '/assets/banner-5.png', eyebrow: 'RECYCLING MARKET', title: '轻量供需对接', subtitle: '发布 · 意向 · 私密联系' }
     ]

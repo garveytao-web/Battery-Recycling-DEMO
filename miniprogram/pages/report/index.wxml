@@ -18,12 +18,11 @@
           <view class="small muted">电池包型号：{{report.vehicle.exactPackModel || '公开资料未披露'}}</view>
         </view>
       </view>
-      <view class="card">
-        <view class="title">主要金属含量参考</view>
-        <view class="muted small">依据电池化学体系与整包重量展示行业区间。</view>
-        <view class="metal-item" wx:for="{{report.metalContentEstimates}}" wx:key="name">
-          <view class="row"><text class="subtitle">{{item.name}}</text><text class="value">{{item.massLowKg}}—{{item.massHighKg}} kg</text></view>
-          <view class="metal-meta"><text>整包占比 {{item.contentLowPercent}}%—{{item.contentHighPercent}}%</text><text wx:if="{{item.marketLow}}">{{item.marketProduct}} {{item.marketLow}}—{{item.marketHigh}} 元/吨</text><text wx:if="{{item.marketSnapshotDate}}">行情日期 {{item.marketSnapshotDate}}</text></view>
+      <view wx:if="{{report.marketReferences.length}}" class="card">
+        <view class="title">相关回收材料行情</view>
+        <view class="market-item" wx:for="{{report.marketReferences}}" wx:key="name">
+          <view class="row market-heading"><text class="subtitle market-name">{{item.name}}</text><text class="value market-price">{{item.low}}—{{item.high}} {{item.unit}}</text></view>
+          <view class="market-meta"><text>{{item.grade}}</text><text>行情日期 {{item.snapshotDate}}</text></view>
         </view>
       </view>
       <button class="primary full" bindtap="publish">携带参数发布供需</button>

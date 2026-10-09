@@ -63,18 +63,18 @@ test('拒绝缺失、负数与非法枚举，已删除的旧表单字段不起�
   assert.equal(report.result.center, 5076.4);
 });
 
-test('报告附主要金属区间与静态行情但不计算理论金属贡献', () => {
-  const report = estimate(manual, catalog, now);
-  assert.ok(report.materialReferences.length >= 2);
-  assert.equal(report.metalContentEstimates.length, 3);
-  assert.equal(report.metalContentEstimates[0].name, '锂');
-  assert.equal(report.metalContentEstimates[0].massLowKg, 3.2);
-  assert.equal(report.metalContentEstimates[0].massHighKg, 6.4);
-  assert.equal(report.metalContentEstimates[0].marketProduct, '工业级碳酸锂');
-  assert.equal(report.metalContentEstimates[1].marketProduct, '1#铜');
-  assert.equal(report.metalContentEstimates[2].marketProduct, 'A00铝');
-  assert.equal(Object.hasOwn(report.result, 'metalContribution'), false);
-  assert.match(report.scope, /不构成最终收购承诺/);
+test('报告按化学体系附三项回收材料行情且不再推算金属含量', () => {
+  const lfp = estimate(manual, catalog, now);
+  const ncm = estimate({ ...manual, chemistry: 'ncm' }, catalog, now);
+  const smallNcm = estimate({ ...manual, chemistry: 'small_ncm' }, catalog, now);
+  assert.deepEqual(lfp.marketReferences.map(item => item.name), ['磷酸铁锂电池粉', '废旧磷酸铁锂正极片', '磷酸铁锂极片粉']);
+  assert.deepEqual(ncm.marketReferences.map(item => item.name), ['废旧三元正极片', '三元极片粉', '三元电池粉']);
+  assert.deepEqual(smallNcm.marketReferences.map(item => item.name), ['小三元18650', '小三元铝壳', '小三元聚合物／软包']);
+  assert.deepEqual(smallNcm.marketReferences.map(item => [item.low, item.high]), [[17000, 20500], [21000, 24000], [21500, 24500]]);
+  assert.equal(smallNcm.marketReferences[0].snapshotDate, '2026-10-08');
+  assert.equal(Object.hasOwn(lfp, 'metalContentEstimates'), false);
+  assert.equal(Object.hasOwn(lfp.result, 'metalContribution'), false);
+  assert.match(lfp.scope, /不构成最终收购承诺/);
 });
 
 test('CSV导入工具继续支持中文、BOM、换行与严格单位', () => {

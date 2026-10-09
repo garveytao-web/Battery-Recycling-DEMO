@@ -6,7 +6,7 @@ const VERSION = 'XUNDIAN-WEIGHT-4.1';
 const chemistries = {
   lfp: '磷酸铁锂',
   ncm: '三元锂',
-  small_ncm: '小三元（来源分类）'
+  small_ncm: '小三元'
 };
 const forms = { prismatic: '方形', pouch: '软包', cylindrical: '圆柱形' };
 
@@ -38,60 +38,32 @@ function nonNegative(value, label, max = 2000000) {
 const money = value => Math.round(value * 100) / 100;
 const percent = value => Math.round(value * 10) / 10;
 
-function materialReferences(chemistry, catalog) {
-  const wanted = chemistry === 'lfp'
-    ? ['磷酸铁锂电池粉', '工业级碳酸锂']
-    : ['三元电池粉', '电池级硫酸镍', '电池级硫酸钴', '工业级碳酸锂'];
-  return wanted.map(name => catalog.materials.find(row => row.name === name)).filter(Boolean).map(row => structuredClone(row));
-}
-
-// 仅用于客户报告中的区间参考，不进入估价公式。区间覆盖常见乘用车动力电池包，
-// 避免把化学计量或单一拆解样本伪装成某一实物电池包的精确 BOM。
-const metalContentProfiles = {
+const marketReferencePlans = {
   lfp: [
-    { name: '锂', lowRatio: 0.008, highRatio: 0.016, marketProduct: '工业级碳酸锂' },
-    { name: '铜', lowRatio: 0.05, highRatio: 0.12, marketProduct: '1#铜' },
-    { name: '铝', lowRatio: 0.1, highRatio: 0.2, marketProduct: 'A00铝' }
+    { sourceName: '磷酸铁锂电池粉', displayName: '磷酸铁锂电池粉' },
+    { sourceName: '磷酸铁锂正极片', displayName: '废旧磷酸铁锂正极片' },
+    { sourceName: '磷酸铁锂极片粉', displayName: '磷酸铁锂极片粉' }
   ],
   ncm: [
-    { name: '锂', lowRatio: 0.012, highRatio: 0.023, marketProduct: '工业级碳酸锂' },
-    { name: '镍', lowRatio: 0.035, highRatio: 0.155, marketProduct: '1#镍' },
-    { name: '钴', lowRatio: 0.019, highRatio: 0.035, marketProduct: '1#钴' },
-    { name: '锰', lowRatio: 0.018, highRatio: 0.035, marketProduct: '1#电解锰' },
-    { name: '铜', lowRatio: 0.05, highRatio: 0.12, marketProduct: '1#铜' },
-    { name: '铝', lowRatio: 0.1, highRatio: 0.2, marketProduct: 'A00铝' }
+    { sourceName: '三元正极片', displayName: '废旧三元正极片' },
+    { sourceName: '三元极片粉', displayName: '三元极片粉' },
+    { sourceName: '三元电池粉', displayName: '三元电池粉' }
   ],
   small_ncm: [
-    { name: '锂', lowRatio: 0.01, highRatio: 0.023, marketProduct: '工业级碳酸锂' },
-    { name: '镍', lowRatio: 0.025, highRatio: 0.155, marketProduct: '1#镍' },
-    { name: '钴', lowRatio: 0.015, highRatio: 0.04, marketProduct: '1#钴' },
-    { name: '锰', lowRatio: 0.015, highRatio: 0.04, marketProduct: '1#电解锰' },
-    { name: '铜', lowRatio: 0.05, highRatio: 0.12, marketProduct: '1#铜' },
-    { name: '铝', lowRatio: 0.1, highRatio: 0.2, marketProduct: 'A00铝' }
+    { sourceName: '小三元18650', displayName: '小三元18650' },
+    { sourceName: '小三元铝壳', displayName: '小三元铝壳' },
+    { sourceName: '小三元聚合物/软包', displayName: '小三元聚合物／软包' }
   ]
 };
-const metalContentSources = [
-  'https://publications.anl.gov/anlpubs/2023/12/186487.pdf',
-  'https://www.energy.gov/sites/default/files/2022-02/Energy%20Storage%20Supply%20Chain%20Report%20-%20final.pdf',
-  'https://www.cnmn.com.cn/ShowNews1.aspx?id=474386'
-];
 
-function metalContentEstimates(chemistry, massKg, catalog) {
-  return (metalContentProfiles[chemistry] || []).map(item => {
-    const market = catalog.materials.find(row => row.name === item.marketProduct);
-    return {
-      name: item.name,
-      contentLowPercent: percent(item.lowRatio * 100),
-      contentHighPercent: percent(item.highRatio * 100),
-      massLowKg: money(massKg * item.lowRatio),
-      massHighKg: money(massKg * item.highRatio),
-      marketProduct: item.marketProduct,
-      marketLow: market?.low ?? null,
-      marketHigh: market?.high ?? null,
-      marketUnit: market?.unit || null,
-      marketSnapshotDate: market?.snapshotDate || null
-    };
-  });
+function marketReferences(chemistry, catalog) {
+  const plan = marketReferencePlans[chemistry] || [];
+  const references = plan.map(item => {
+    const row = catalog.materials.find(candidate => candidate.name === item.sourceName);
+    return row ? { ...structuredClone(row), name: item.displayName } : null;
+  }).filter(Boolean);
+  if (references.length !== plan.length) throw new InputError('相关回收材料行情尚未配置完整', 503);
+  return references;
 }
 
 function estimate(raw, catalog, now = new Date()) {
@@ -215,16 +187,14 @@ function estimate(raw, catalog, now = new Date()) {
     },
     weightEstimate,
     energyCheck,
-    materialReferences: materialReferences(chemistry, catalog),
-    metalContentEstimates: metalContentEstimates(chemistry, massKg, catalog),
+    marketReferences: marketReferences(chemistry, catalog),
     warnings,
     references: [
       { id: rate.id, type: 'weight_baseline', source: baseline.source, sampleCount: rate.sampleCount, price: rate.price, unit: rate.unit },
-      ...metalContentSources.map(source => ({ type: 'metal_content_basis', source })),
       ...(vehicle ? Object.entries(vehicle.sources).filter(([, url]) => url).map(([field, url]) => ({ type: `vehicle_${field}`, source: url })) : [])
     ],
     scope: '材料回收参考，不含拆车、物流、检测与异常处置费用，不构成最终收购承诺。报告是生成时点快照。'
   };
 }
 
-module.exports = { estimate, metalContentEstimates, InputError, positive, nonNegative, text, VERSION, chemistries, forms };
+module.exports = { estimate, InputError, positive, nonNegative, text, VERSION, chemistries, forms };

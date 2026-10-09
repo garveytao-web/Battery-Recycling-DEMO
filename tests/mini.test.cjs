@@ -48,7 +48,24 @@ test('客户界面不暴露底库规模、计算公式、来源或版本', () =>
   for (const text of ['价格计算', '容量交叉校验', '来源与版本', '动力再生', 'algorithmVersion', 'pricingVersion', 'report.warnings']) assert.doesNotMatch(report, new RegExp(text));
   assert.doesNotMatch(home, /当前数据覆盖|vehicleCount|ConfigurationCount/);
   assert.doesNotMatch(estimatePage, /不参与价格计算|重量主估值|电量用于交叉校验/);
-  assert.match(report, /主要金属含量参考/);
+  assert.match(report, /相关回收材料行情/);
+  assert.doesNotMatch(report, /主要金属含量参考|metalContentEstimates|整包占比/);
+});
+
+test('四项界面调整保留单行操作、小三元简称与轮播图增深层', () => {
+  const read = relative => fs.readFileSync(path.join(__dirname, '../miniprogram', relative), 'utf8');
+  const estimateMarkup = read('pages/estimate/index.wxml');
+  const estimateScript = read('pages/estimate/index.js');
+  const homeMarkup = read('pages/home/index.wxml');
+  const homeScript = read('pages/home/index.js');
+  const styles = read('app.wxss');
+  assert.match(estimateMarkup, /class="config-action"/);
+  assert.match(styles, /\.config-action\s*\{[^}]*white-space:nowrap/);
+  assert.match(estimateScript, /'小三元'/);
+  assert.doesNotMatch(estimateScript + estimateMarkup, /小三元（来源分类）/);
+  assert.match(homeScript, /banner-3\.png', tone: 'deep'/);
+  assert.match(homeMarkup, /class="banner-tint"/);
+  assert.match(styles, /\.banner-tint\s*\{/);
 });
 
 test('开发版提供双身份供需联调入口', () => {

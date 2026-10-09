@@ -18,7 +18,7 @@
     <block wx:for="{{vehicleResults}}" wx:key="publicModel" wx:for-item="model">
       <view class="vehicle-result"><view class="subtitle">{{model.publicModel}}</view><view class="muted small">{{model.commonName || '车型名称未补充'}} · {{model.vehicleMaker}}</view>
         <view wx:for="{{model.configurations}}" wx:key="id" wx:for-item="config" class="config-option {{selectedConfig.id === config.id ? 'active' : ''}}" data-id="{{config.id}}" bindtap="selectConfig">
-          <view class="row"><text>{{config.candidateLabel}}</text><text>{{config.priceReady ? '选择' : '需铭牌'}}</text></view><view class="muted small">包型号：{{config.exactPackModel || '未公开'}} · {{config.id}}</view>
+          <view class="row config-heading"><text class="config-label">{{config.candidateLabel}}</text><text class="config-action">{{config.priceReady ? '选择' : '需铭牌'}}</text></view><view class="muted small">包型号：{{config.exactPackModel || '未公开'}} · {{config.id}}</view>
         </view>
       </view>
     </block>

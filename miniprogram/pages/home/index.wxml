@@ -1,7 +1,7 @@
 <view class="page home-page">
   <view class="brand-lockup"><image src="/assets/logo-mark.png" mode="aspectFit"/><view><view class="brand-name">循电</view><view class="eyebrow">XUNDIAN</view></view></view>
   <swiper class="banner-swiper" indicator-dots="true" indicator-color="#ffffff77" indicator-active-color="#ffffff" autoplay="true" interval="4200" circular="true">
-    <swiper-item wx:for="{{banners}}" wx:key="image"><view class="banner-slide" bindtap="estimate"><image class="banner-image" src="{{item.image}}" mode="aspectFill"/><view class="banner-copy"><view class="banner-eyebrow">{{item.eyebrow}}</view><view class="banner-title">{{item.title}}</view><view class="banner-subtitle">{{item.subtitle}}</view><view class="banner-cta">开始估价 →</view></view></view></swiper-item>
+    <swiper-item wx:for="{{banners}}" wx:key="image"><view class="banner-slide" bindtap="estimate"><image class="banner-image" src="{{item.image}}" mode="aspectFill"/><view wx:if="{{item.tone === 'deep'}}" class="banner-tint"></view><view class="banner-copy"><view class="banner-eyebrow">{{item.eyebrow}}</view><view class="banner-title">{{item.title}}</view><view class="banner-subtitle">{{item.subtitle}}</view><view class="banner-cta">开始估价 →</view></view></view></swiper-item>
   </swiper>
   <view class="card quick-card">
     <view class="eyebrow">QUICK START</view><view class="title">动力电池回收参考估价</view>

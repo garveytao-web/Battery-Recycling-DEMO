@@ -39,11 +39,18 @@ test('报告端到端：登录、估价、历史、快照不变、权限隔离',
     const created = await app.call('/api/estimates', 'POST', estimateInput, a); assert.equal(created.status, 201);
     const report = created.body; assert.equal(report.result.center, 5076.4);
     for (const field of ['weightEstimate','energyCheck','warnings','references','algorithmVersion','catalogVersion','pricingVersion']) assert.equal(Object.hasOwn(report, field), false);
-    assert.equal(report.metalContentEstimates[0].name, '锂');
+    assert.deepEqual(report.marketReferences.map(item => item.name), ['磷酸铁锂电池粉', '废旧磷酸铁锂正极片', '磷酸铁锂极片粉']);
+    assert.deepEqual(Object.keys(report.marketReferences[0]), ['name', 'grade', 'low', 'high', 'unit', 'snapshotDate']);
+    assert.equal(report.marketReferences[0].unit, '元/吨');
+    assert.doesNotMatch(JSON.stringify(report.marketReferences), /https?:\/\//);
+    assert.equal(Object.hasOwn(report, 'metalContentEstimates'), false);
     catalog.pricing.weightRates[0].price = 99999;
     assert.deepEqual((await app.call('/api/reports/' + report.id, 'GET', undefined, a)).body, report);
     assert.equal((await app.call('/api/reports/' + report.id, 'GET', undefined, b)).status, 404);
     assert.equal((await app.call('/api/reports', 'GET', undefined, a)).body.items[0].id, report.id);
+    const smallNcm = (await app.call('/api/estimates', 'POST', { ...estimateInput, chemistry: 'small_ncm' }, a)).body;
+    assert.deepEqual(smallNcm.marketReferences.map(item => item.name), ['小三元18650', '小三元铝壳', '小三元聚合物／软包']);
+    assert.doesNotMatch(JSON.stringify(smallNcm.marketReferences), /https?:\/\//);
   } finally { await app.stop(); }
 });
 

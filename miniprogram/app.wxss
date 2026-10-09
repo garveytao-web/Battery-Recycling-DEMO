@@ -20,7 +20,8 @@ page { background:#f3f7f4; color:#233b35; font-family:-apple-system,BlinkMacSyst
 .banner-swiper { height:360rpx; margin-bottom:26rpx; overflow:hidden; border-radius:32rpx; background:#0b7558; box-shadow:0 18rpx 42rpx rgba(11,117,88,.16); }
 .banner-slide { position:relative; width:100%; height:100%; }
 .banner-image { width:100%; height:100%; }
-.banner-copy { position:absolute; top:52rpx; right:250rpx; left:42rpx; color:#fff; }
+.banner-tint { position:absolute; top:0; right:0; bottom:0; left:0; background:rgba(5,73,55,.3); }
+.banner-copy { position:absolute; z-index:1; top:52rpx; right:250rpx; left:42rpx; color:#fff; }
 .banner-eyebrow { color:#cbe9dc; font-size:18rpx; letter-spacing:3rpx; }
 .banner-title { margin-top:20rpx; font-size:42rpx; font-weight:780; white-space:nowrap; }
 .banner-subtitle { margin-top:12rpx; color:#e5f7ef; font-size:24rpx; }
@@ -49,6 +50,9 @@ textarea { height:180rpx; }
 .vehicle-result { padding:24rpx 0; border-top:1rpx solid #e7eee9; }
 .config-option { margin-top:14rpx; padding:20rpx; border:1rpx solid #dfe9e3; border-radius:18rpx; background:#fbfdfb; }
 .config-option.active { border-color:#0b7558; background:#e8f5ef; }
+.config-heading { align-items:flex-start; }
+.config-label { flex:1; min-width:0; }
+.config-action { flex-shrink:0; white-space:nowrap; color:#0b7558; font-weight:700; }
 .selected-config,.source-box,.formula { margin-top:20rpx; padding:22rpx; border-left:6rpx solid #0b7558; border-radius:16rpx; background:#eff7f2; }
 .tag { display:inline-flex; padding:6rpx 16rpx; border:1rpx solid #cfe8dc; border-radius:999rpx; background:#e8f5ef; color:#0b7558; font-size:22rpx; }
 .link { color:#0b7558; }
@@ -66,9 +70,12 @@ textarea { height:180rpx; }
 .report-title { margin:10rpx 0 18rpx; font-size:38rpx; font-weight:760; }
 .report-body { position:relative; margin-top:-48rpx; padding:0 28rpx 60rpx; }
 .valuation-card { text-align:center; }
-.metal-item { padding:24rpx 0; border-bottom:1rpx solid #edf1ed; }
-.metal-item:last-child { padding-bottom:0; border-bottom:0; }
-.metal-meta { display:flex; flex-direction:column; gap:4rpx; margin-top:8rpx; color:#71867e; font-size:22rpx; }
+.market-item { padding:24rpx 0; border-bottom:1rpx solid #edf1ed; }
+.market-item:last-child { padding-bottom:0; border-bottom:0; }
+.market-heading { align-items:flex-start; }
+.market-name { flex:1; min-width:0; }
+.market-price { flex-shrink:0; margin-left:16rpx; white-space:nowrap; }
+.market-meta { display:flex; flex-direction:column; gap:4rpx; margin-top:8rpx; color:#71867e; font-size:22rpx; }
 .bullet { margin:16rpx 0; }
 .right { text-align:right; }
 .radio-row { display:flex; flex-wrap:wrap; gap:14rpx; }

@@ -1,5 +1,5 @@
 {
-  "version": "2026-09-29-import-v1",
+  "version": "2026-10-08-market-v2",
   "quotes": [
     {
       "id": "dczj-1-01",
@@ -4174,6 +4174,42 @@
       "usage": "市场资料；不直接乘整包质量"
     },
     {
+      "name": "小三元18650",
+      "grade": "废旧电芯 · 18650",
+      "low": 17000.0,
+      "high": 20500.0,
+      "mid": 18750.0,
+      "unit": "CNY/t",
+      "snapshotDate": "2026-10-08",
+      "source": "https://list1.mysteel.com/dh/512/o1.html",
+      "status": "archived_snapshot",
+      "usage": "市场资料；不直接乘整包质量"
+    },
+    {
+      "name": "小三元铝壳",
+      "grade": "废旧电芯 · 铝壳",
+      "low": 21000.0,
+      "high": 24000.0,
+      "mid": 22500.0,
+      "unit": "CNY/t",
+      "snapshotDate": "2026-10-08",
+      "source": "https://list1.mysteel.com/dh/512/o1.html",
+      "status": "archived_snapshot",
+      "usage": "市场资料；不直接乘整包质量"
+    },
+    {
+      "name": "小三元聚合物/软包",
+      "grade": "废旧电芯 · 聚合物／软包",
+      "low": 21500.0,
+      "high": 24500.0,
+      "mid": 23000.0,
+      "unit": "CNY/t",
+      "snapshotDate": "2026-10-08",
+      "source": "https://list1.mysteel.com/dh/512/o1.html",
+      "status": "archived_snapshot",
+      "usage": "市场资料；不直接乘整包质量"
+    },
+    {
       "name": "电池级硫酸镍",
       "grade": "Ni≥22.2%，磁性异物≤100PPb",
       "low": 27100.0,
@@ -4213,6 +4249,6 @@
   "sourceWorkbookSha256": "e5b134d2e95d8d0af2e6db0c3f7ca98d6f04f5ce578b7ed9421317ba5cf0695d",
   "sourceNotes": {
     "nebcycling": "原页面未成功取得，暂定成分参数未进入报价引擎",
-    "smallTernary": "来源分类定义待确认，不从Ni/Co黑粉品位推断电芯类别"
+    "smallTernary": "小三元行情按18650、铝壳与聚合物分类，不以普通三元材料行情替代"
   }
 }
