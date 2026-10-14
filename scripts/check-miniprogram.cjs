@@ -27,6 +27,6 @@ for (const page of app.pages) {
     for (const m of wxml.matchAll(/<(\/?)([a-zA-Z-]+)\b/g)) if (!['view','text','button','block','picker','input','textarea','checkbox','checkbox-group','label','image','swiper','swiper-item'].includes(m[2])) failures.push(`${page}: 非白名单原生组件${m[2]}`);
   } catch(e) { failures.push(`${page}: ${e.message}`); }
 }
-for (const f of ['app.js','config.js','utils/api.js','utils/validation.js']) checkJS(path.join(root,f));
+for (const f of ['app.js','config.js','utils/api.js','utils/date.js','utils/validation.js']) checkJS(path.join(root,f));
 for (const tab of app.tabBar.list) if (!app.pages.includes(tab.pagePath)) failures.push('tabBar页面未注册');
 if (failures.length) { console.error(failures.join('\n')); process.exitCode=1; } else console.log(`通过：${app.pages.length}个原生页面的JS语法、事件绑定、组件和路由静态检查。微信编译/真机检查仍需开发者工具。`);

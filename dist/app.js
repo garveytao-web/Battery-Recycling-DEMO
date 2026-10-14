@@ -5,7 +5,7 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp
 const clone = value => typeof structuredClone === 'function' ? structuredClone(value) : JSON.parse(JSON.stringify(value));
 const round = (value, digits = 2) => Number(Number(value).toFixed(digits));
 const money = value => Number(value).toLocaleString('zh-CN', {maximumFractionDigits:0});
-const date = value => new Date(value).toLocaleString('zh-CN', {hour12:false});
+const date = value => new Date(value).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai', hour12:false}) + ' 北京时间';
 const uid = prefix => `${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
 
 // 全部为产品演示用 Mock 数据。锂统一采用“折金属锂当量”口径和对应的元/kg参考单价。

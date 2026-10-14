@@ -1,4 +1,5 @@
 const config = require('../config');
+const { date } = require('./date');
 let loginTask = null;
 function request(path, method = 'GET', data, authenticated = true) {
   return new Promise((resolve, reject) => {
@@ -52,7 +53,6 @@ async function login() {
 }
 async function ensureLogin() { if (!loginTask) loginTask = login().finally(() => { loginTask = null; }); return loginTask; }
 async function api(path, method = 'GET', data) { await ensureLogin(); return request(path, method, data); }
-const date = iso => (iso || '').replace('T', ' ').slice(0, 16) + ' UTC';
 const prices = { 'CNY/batch': '元/批', 'CNY/kg': '元/kg', 'CNY/kWh': '元/kWh' };
 const chemistryNames = { lfp: '磷酸铁锂', ncm: '三元锂', small_ncm: '小三元' };
 const formNames = { prismatic: '方形', pouch: '软包', cylindrical: '圆柱形' };
